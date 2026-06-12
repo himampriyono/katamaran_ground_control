@@ -1,20 +1,14 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'data/app_data.dart';
 import 'screens/main_dashboard.dart';
 import 'services/mavlink_service.dart';
 import 'utils/joystick_handler.dart';
 import 'widgets/snackbar.dart';
-import 'windows/camera_window.dart';
 
 final mavlinkService = MavlinkService();
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  debugPrint("ARGS: $args");
-
-  debugPrint("Starting MAIN WINDOW");
 
   await _initializeServices();
 
