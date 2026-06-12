@@ -1,17 +1,31 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'data/app_data.dart';
 import 'screens/main_dashboard.dart';
 import 'services/mavlink_service.dart';
 import 'utils/joystick_handler.dart';
 import 'widgets/snackbar.dart';
-import 'data/app_data.dart';
+import 'windows/camera_window.dart';
 
 final mavlinkService = MavlinkService();
 
-void main() async {
+Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  debugPrint("ARGS: $args");
+
+  debugPrint("Starting MAIN WINDOW");
+
+  await _initializeServices();
+
+  runApp(const MainApp());
+}
+
+Future<void> _initializeServices() async {
   debugPrint("Starting ${AppData.appName}...");
 
-  mavlinkService.connect(14550);
+  await mavlinkService.connect(14550);
+
   JoystickHandler.startAutoReconnectJoystick(
     targetPort: 'COM5',
     baudRate: 115200,
@@ -19,8 +33,6 @@ void main() async {
       debugPrint("Joystick Status: $statusUpdate");
     },
   );
-
-  runApp(const MainApp());
 }
 
 class MainApp extends StatelessWidget {
@@ -29,11 +41,12 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      scaffoldMessengerKey: Snackbar.messengerKey,
       theme: ThemeData(
         brightness: Brightness.light,
         primarySwatch: Colors.blueGrey,
       ),
-      scaffoldMessengerKey: Snackbar.messengerKey,
       home: const MainDashboard(),
     );
   }

@@ -12,19 +12,14 @@ class MainDashboard extends StatefulWidget {
 
 class _MainDashboard extends State<MainDashboard> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return const Scaffold(
       backgroundColor: Color(0xFF1E1E24),
-      appBar: MainAppbar(), 
+      appBar: MainAppbar(),
       body: Row(
         children: [
           MapArea(),
-          MainSidePanel()
+          MainSidePanel(),
         ],
       ),
     );

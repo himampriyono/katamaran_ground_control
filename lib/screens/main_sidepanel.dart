@@ -557,8 +557,10 @@ class MainSidePanel extends StatelessWidget {
                       letterSpacing: 2.0,
                     ),
                   ),
+                  
                 ],
               ),
+              
             ],
           ),
         );
