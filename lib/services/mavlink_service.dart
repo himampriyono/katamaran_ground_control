@@ -4,8 +4,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dart_mavlink/mavlink.dart';
 import 'package:dart_mavlink/dialects/common.dart';
+import 'package:flutter/services.dart';
 import '../data/app_data.dart';
 import '../data/mavlink_data.dart';
+import '../models/mav_parameter.dart';
+import '../utils/app_utils.dart';
 import 'notifier_service.dart';
 import '../widgets/snackbar.dart';
 
@@ -15,7 +18,7 @@ class MavlinkService {
   factory MavlinkService() => instance;
   static final MavlinkService instance = MavlinkService._internal();
   static RawDatagramSocket? udpSocket;
-  final MavlinkParser _parser = MavlinkParser(MavlinkDialectCommon());
+  late MavlinkParser _parser;
 
   static int sequence = 1;
   static bool isSending = false;
@@ -24,26 +27,38 @@ class MavlinkService {
   static Timer? _linkStatsTimer;
   static int _pingSequence = 0;
   static final Map<int, int> _pendingPings = {};
+  static Timer? _connectionMonitorTimer;
 
   static final Queue<MavlinkFrame> sendQueue = Queue<MavlinkFrame>();
 
   bool _lastConnectionSat = false;
 
-  Future<void> connect(int port) async {
+  static Completer<bool>? _parameterWriteCompleter;
+  static String? _waitingParameterName;
+  static double? _waitingParameterValue;
+
+  Future<void> connect({required String host, required int port}) async {
     try {
       debugPrint("Connecting to port $port");
-      udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, port);
-      debugPrint("Connected to port $port");
+      udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+      udpSocket!.send(Uint8List(0), InternetAddress(host), port);
+      debugPrint("Connecting to $host:$port");
+      debugPrint("Local Port : ${udpSocket!.port}");
+      // debugPrint("Connected to port $port");
       _startLinkStatistics();
       MavlinkData.reset();
       NotifierService.triggerConnectionUpdate();
 
+      _parser = MavlinkParser(MavlinkDialectCommon());
       udpSocket?.listen((RawSocketEvent event) {
         if (event == RawSocketEvent.read) {
           Datagram? dg = udpSocket?.receive();
           if (dg != null) {
             MavlinkData.currentHost = dg.address.address;
             MavlinkData.currentPort = dg.port;
+            // debugPrint(
+            //   "UDP ${dg.data.length} bytes from ${dg.address.address}:${dg.port}",
+            // );
             _parser.parse(dg.data);
           }
         }
@@ -53,7 +68,11 @@ class MavlinkService {
         _handleIncomingFrame(frame);
       });
 
-      Timer.periodic(const Duration(seconds: 1), (timer) {
+      _connectionMonitorTimer?.cancel();
+
+      _connectionMonitorTimer = Timer.periodic(const Duration(seconds: 1), (
+        timer,
+      ) {
         if (udpSocket == null) {
           timer.cancel();
           _stopGcsScheduler();
@@ -72,13 +91,18 @@ class MavlinkService {
             debugPrint("Connected!");
             _startGcsScheduler();
             Snackbar.show("Mavlink Connected!");
+            debugPrint(
+              "Target = "
+              "${MavlinkData.targetSystemId} "
+              "${MavlinkData.targetComponentId}",
+            );
             Future.delayed(const Duration(milliseconds: 500), () {
               MavlinkService.requestHomePosition();
               MavlinkService.configureTelemetry();
             });
           } else {
             debugPrint("Disconnected!");
-            _startGcsScheduler();
+            _stopGcsScheduler();
             Snackbar.show("Mavlink Disconnected!", isWarning: true);
           }
           NotifierService.triggerConnectionUpdate();
@@ -94,6 +118,7 @@ class MavlinkService {
     MavlinkData.packetsThisSecond++;
 
     final message = frame.message;
+    // debugPrint("MSG ${message.runtimeType} (${message.mavlinkMessageId})");
 
     if (message is Heartbeat) {
       if (message.customMode != MavlinkData.lastHeartbeat?.customMode) {
@@ -135,33 +160,80 @@ class MavlinkService {
         "targetSys=${message.targetSystem}, "
         "targetComp=${message.targetComponent}",
       );
-    // } else if (message is Timesync) {
-    //   debugPrint(
-    //     "TIMESYNC RX "
-    //     "tc1=${message.tc1} "
-    //     "ts1=${message.ts1}",
-    //   );
+    } else if (message is RcChannels) {
+      MavlinkData.rcChannels[0] = message.chan1Raw;
+      MavlinkData.rcChannels[1] = message.chan2Raw;
+      MavlinkData.rcChannels[2] = message.chan3Raw;
+      MavlinkData.rcChannels[3] = message.chan4Raw;
+      MavlinkData.rcChannels[4] = message.chan5Raw;
+      MavlinkData.rcChannels[5] = message.chan6Raw;
+      MavlinkData.rcChannels[6] = message.chan7Raw;
+      MavlinkData.rcChannels[7] = message.chan8Raw;
+      MavlinkData.rcChannels[8] = message.chan9Raw;
+      MavlinkData.rcChannels[9] = message.chan10Raw;
+      MavlinkData.rcChannels[10] = message.chan11Raw;
+      MavlinkData.rcChannels[11] = message.chan12Raw;
+      MavlinkData.rcChannels[12] = message.chan13Raw;
+      MavlinkData.rcChannels[13] = message.chan14Raw;
+      MavlinkData.rcChannels[14] = message.chan15Raw;
+      MavlinkData.rcChannels[15] = message.chan16Raw;
+      NotifierService.triggerRcUpdate();
+    } else if (message is ServoOutputRaw) {
+      MavlinkData.pwmOutput[0] = message.servo1Raw;
+      MavlinkData.pwmOutput[1] = message.servo2Raw;
+      MavlinkData.pwmOutput[2] = message.servo3Raw;
+      MavlinkData.pwmOutput[3] = message.servo4Raw;
+      MavlinkData.pwmOutput[4] = message.servo5Raw;
+      MavlinkData.pwmOutput[5] = message.servo6Raw;
+      MavlinkData.pwmOutput[6] = message.servo7Raw;
+      MavlinkData.pwmOutput[7] = message.servo8Raw;
+      MavlinkData.pwmOutput[8] = message.servo9Raw;
+      MavlinkData.pwmOutput[9] = message.servo10Raw;
+      MavlinkData.pwmOutput[10] = message.servo11Raw;
+      MavlinkData.pwmOutput[11] = message.servo12Raw;
+      MavlinkData.pwmOutput[12] = message.servo13Raw;
+      MavlinkData.pwmOutput[13] = message.servo14Raw;
+      MavlinkData.pwmOutput[14] = message.servo15Raw;
+      MavlinkData.pwmOutput[15] = message.servo16Raw;
+      NotifierService.triggerPwmUpdate();
+    } else if (message is ActuatorOutputStatus) {
+      debugPrint(message.toString());
+    } else if (message is ParamValue) {
+      final name = AppUtils.charListToString(message.paramId);
 
-    //   if (message.tc1 == 0) {
-    //     final now = DateTime.now().microsecondsSinceEpoch;
+      MavlinkData.parameters[name] = MavParameter(
+        name: name,
+        value: message.paramValue,
+        type: message.paramType,
+      );
 
-    //     debugPrint(
-    //       "TIMESYNC REPLY "
-    //       "tc1=$now "
-    //       "ts1=${message.ts1}"
-    //       "TIMESYNC from sys=${frame.systemId}"
-    //       "comp=${frame.componentId}",
-    //     );
+      MavlinkData.parameterLoaded = message.paramIndex + 1;
+      MavlinkData.parameterCount = message.paramCount;
 
-    //     final reply = Timesync(
-    //       tc1: now,
-    //       ts1: message.ts1,
-    //       targetSystem: frame.systemId,
-    //       targetComponent: frame.componentId,
-    //     );
+      // if (message.paramIndex % 25 == 0 ||
+      //     message.paramIndex + 1 == message.paramCount) {
+      //   NotifierService.triggerParameterUpdate();
+      // }
 
-    //     _queueMessage(reply);
-    //   }
+      if (message.paramIndex + 1 == message.paramCount) {
+        MavlinkData.isLoadingParameters = false;
+        NotifierService.triggerParameterUpdate();
+        debugPrint(
+          "Parameter loaded successfully (${MavlinkData.parameterCount} parameter)",
+        );
+      }
+
+      // ============
+      NotifierService.triggerParameterUpdate();
+      if (_parameterWriteCompleter != null) {
+        if (name == _waitingParameterName &&
+            message.paramValue == _waitingParameterValue) {
+          _parameterWriteCompleter!.complete(true);
+          _parameterWriteCompleter = null;
+          _waitingParameterName = null;
+          _waitingParameterValue = null;
+        }
+      }
     }
   }
 
@@ -193,7 +265,7 @@ class MavlinkService {
       param7: param7,
     );
     _queueMessage(msg);
-    debugPrint("sys: $targetSys, comp: $targetComp");
+    debugPrint("CMD $command -> sys=$targetSys comp=$targetComp");
   }
 
   static void _queueMessage(MavlinkMessage message) {
@@ -221,7 +293,6 @@ class MavlinkService {
 
     try {
       final frame = sendQueue.removeFirst();
-      // debugPrint("TX ${frame.message.runtimeType}");
       final dataToSend = frame.serialize();
 
       if (udpSocket != null) {
@@ -256,19 +327,14 @@ class MavlinkService {
     _gcsSchedulerTimer = Timer.periodic(const Duration(milliseconds: 250), (
       timer,
     ) {
+      // debugPrint("Scheduler Tick");
       if (udpSocket == null) {
         _stopGcsScheduler();
         return;
       }
 
-      if (MavlinkData.currentHost.isNotEmpty) {
-        if (AppData.joystickStatus.value) {
-          sendRcOverride();
-        }
-      } else {
-        debugPrint(
-          "⏳ Menunggu paket masuk dari kapal untuk mendapatkan alamat IP...",
-        );
+      if (AppData.joystickStatus.value == JoystickStatus.connected) {
+        sendRcOverride();
       }
 
       if (_schedulerTicks % 4 == 0) {
@@ -284,7 +350,6 @@ class MavlinkService {
   static void _stopGcsScheduler() {
     _gcsSchedulerTimer?.cancel();
     _gcsSchedulerTimer = null;
-    debugPrint("gcsSchedule stop");
   }
 
   static void _startLinkStatistics() {
@@ -297,6 +362,27 @@ class MavlinkService {
 
       NotifierService.triggerConnectionUpdate();
     });
+  }
+
+  Future<void> disconnect() async {
+    debugPrint("Disconnecting...");
+
+    _stopGcsScheduler();
+
+    udpSocket?.close();
+    udpSocket = null;
+
+    MavlinkData.reset();
+    MavlinkData.isMavlinkConnected = false;
+    _linkStatsTimer?.cancel();
+    _linkStatsTimer = null;
+
+    _lastConnectionSat = false;
+    _connectionMonitorTimer?.cancel();
+    _connectionMonitorTimer = null;
+    NotifierService.triggerConnectionUpdate();
+
+    Snackbar.show("Mavlink Disconnected!", isWarning: true);
   }
 
   // ==== === =====
@@ -318,6 +404,7 @@ class MavlinkService {
     setMessageRate(messageId: MavMessages.globalPositionInt, rateHz: 5);
     setMessageRate(messageId: MavMessages.sysStatus, rateHz: 2);
     setMessageRate(messageId: MavMessages.vfrHud, rateHz: 2);
+    setMessageRate(messageId: 375, rateHz: 2);
   }
 
   static void sendGcsHeartbeat() {
@@ -334,8 +421,6 @@ class MavlinkService {
 
     _queueMessage(msg);
   }
-
-  static int _timesyncSequence = 0;
 
   static void sendTimesyncRequest() {
     if (udpSocket == null) return;
@@ -384,31 +469,108 @@ class MavlinkService {
     final targetSys = MavlinkData.targetSystemId ?? 1;
     final targetComp = MavlinkData.targetComponentId ?? 1;
 
+    final channels = AppData.joystickChannels.value;
+
+    // debugPrint("RC: ${channels.join(', ')}");
     final msg = RcChannelsOverride(
       targetSystem: targetSys,
       targetComponent: targetComp,
-      chan1Raw: AppData.joystickData[0],
-      // chan2Raw: AppData.joystickData[1],
-      chan2Raw: 1500,
-      chan3Raw: AppData.joystickData[2],
-      // chan4Raw: AppData.joystickData[3],
-      chan4Raw: 1500,
-      chan5Raw: AppData.joystickData[4],
-      chan6Raw: AppData.joystickData[5],
-      chan7Raw: AppData.joystickData[6],
-      chan8Raw: AppData.joystickData[7],
-      chan9Raw: AppData.joystickData[8],
-      chan10Raw: AppData.joystickData[9],
-      chan11Raw: AppData.joystickData[10],
-      chan12Raw: AppData.joystickData[11],
-      chan13Raw: AppData.joystickData[12],
-      chan14Raw: AppData.joystickData[13],
-      chan15Raw: AppData.joystickData[14],
-      chan16Raw: AppData.joystickData[15],
+      chan1Raw: channels[0],
+      chan2Raw: channels[1],
+      chan3Raw: channels[2],
+      chan4Raw: channels[3],
+      chan5Raw: channels[4],
+      chan6Raw: channels[5],
+      chan7Raw: channels[6],
+      chan8Raw: channels[7],
+      chan9Raw: channels[8],
+      chan10Raw: channels[9],
+      chan11Raw: channels[10],
+      chan12Raw: channels[11],
+      chan13Raw: channels[12],
+      chan14Raw: channels[13],
+      chan15Raw: channels[14],
+      chan16Raw: channels[15],
       chan17Raw: 0,
       chan18Raw: 0,
     );
 
     _queueMessage(msg);
+  }
+
+  static void requestParameterList() {
+    if (udpSocket == null) {
+      return;
+    }
+
+    debugPrint("Requesting Parameter list...");
+
+    MavlinkData.parameters.clear();
+    MavlinkData.parameterLoaded = 0;
+    MavlinkData.parameterCount = 0;
+    MavlinkData.isLoadingParameters = true;
+
+    NotifierService.triggerParameterUpdate();
+
+    final msg = ParamRequestList(
+      targetSystem: MavlinkData.targetSystemId ?? 1,
+      targetComponent: MavlinkData.targetComponentId ?? 1,
+    );
+
+    _queueMessage(msg);
+  }
+
+  static void requestParameter(String parameterName) {
+    if (udpSocket == null) {
+      return;
+    }
+
+    final msg = ParamRequestRead(
+      paramIndex: -1,
+      targetSystem: MavlinkData.targetSystemId ?? 1,
+      targetComponent: MavlinkData.targetComponentId ?? 1,
+      paramId: AppUtils.stringToCharList(parameterName),
+    );
+
+    _queueMessage(msg);
+
+    debugPrint("Requesting parameter: $parameterName");
+  }
+
+  static Future<bool> setParameter(MavParameter parameter, double value) async {
+    if (udpSocket == null) {
+      return false;
+    }
+
+    if (_parameterWriteCompleter != null) {
+      return false;
+    }
+
+    _parameterWriteCompleter = Completer<bool>();
+    _waitingParameterName = parameter.name;
+    _waitingParameterValue = value;
+
+    final msg = ParamSet(
+      paramValue: value,
+      targetSystem: MavlinkData.targetSystemId ?? 1,
+      targetComponent: MavlinkData.targetComponentId ?? 1,
+      paramId: AppUtils.stringToCharList(parameter.name),
+      paramType: mavParamTypeReal32,
+    );
+
+    debugPrint("TX Paramset: $parameter.name = $value");
+    _queueMessage(msg);
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (_parameterWriteCompleter != null &&
+          !_parameterWriteCompleter!.isCompleted) {
+        _parameterWriteCompleter!.complete(false);
+        _parameterWriteCompleter = null;
+        _waitingParameterName = null;
+        _waitingParameterValue = null;
+      }
+    });
+
+    return _parameterWriteCompleter!.future;
   }
 }

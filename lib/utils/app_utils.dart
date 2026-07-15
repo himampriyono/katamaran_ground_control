@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:dart_mavlink/types.dart';
+
 class AppUtils {
   static (String zone, double easting, double northing) latLonToUtm(
     double lat,
@@ -76,5 +78,30 @@ class AppUtils {
 
     double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
     return earthRadius * c; // Hasil dalam satuan meter
+  }
+
+  static String charListToString(List<char> chars) {
+    final buffer = StringBuffer();
+
+    for (final c in chars) {
+      if (c == 0) {
+        break;
+      }
+
+      buffer.writeCharCode(c);
+    }
+
+    return buffer.toString();
+  }
+
+  static List<char> stringToCharList(String text){
+    final bytes = text.codeUnits;
+    final result = List<char>.filled(16, 0);
+
+    for (int i = 0; i < bytes.length && i < 16; i++){
+      result[i] = bytes[i];
+    }
+
+    return result;
   }
 }

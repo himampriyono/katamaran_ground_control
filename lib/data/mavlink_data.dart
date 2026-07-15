@@ -1,4 +1,5 @@
 import 'package:dart_mavlink/dialects/common.dart';
+import '../models/mav_parameter.dart';
 
 class MavlinkData {
   static const int mySystemId = 255;
@@ -23,6 +24,12 @@ class MavlinkData {
   static VfrHud? lastVfrHud;
   static GlobalPositionInt? lastGlobalPositionInt;
   static HomePosition? lastHomePosition;
+  static List<int> rcChannels = List.filled(16, 1500);
+  static List<int> pwmOutput = List.filled(16, 950);
+  static final Map<String, MavParameter> parameters = {};
+  static int parameterCount = 0;
+  static int parameterLoaded = 0;
+  static bool isLoadingParameters = false;
 
   static void reset() {
     isMavlinkConnected = false;

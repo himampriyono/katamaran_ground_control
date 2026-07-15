@@ -5,12 +5,11 @@ import '../data/app_data.dart';
 import '../services/mavlink_service.dart';
 import '../data/mavlink_data.dart';
 import '../utils/app_utils.dart';
-import '../widgets/setting_menu.dart';
 
 class MainSidePanel extends StatelessWidget {
   const MainSidePanel({super.key});
 
-  static final ValueNotifier<bool> isMenuOpen = ValueNotifier(false);
+  // static final ValueNotifier<bool> isMenuOpen = ValueNotifier(false);
 
   @override
   Widget build(BuildContext context) {
@@ -45,19 +44,6 @@ class MainSidePanel extends StatelessWidget {
               _buildTorpedoFleetWidget(),
               const SizedBox(height: 20),
             ],
-          ),
-          ValueListenableBuilder<bool>(
-            valueListenable: isMenuOpen,
-            builder: (context, isOpen, child) {
-              if (!isOpen)
-                return const SizedBox.shrink(); // Sembunyikan jika false
-
-              return Positioned.fill(
-                child: SettingMenu(
-                  onClose: () => isMenuOpen.value = false, // Aksi tutup menu
-                ),
-              );
-            },
           ),
         ],
       ),
@@ -557,10 +543,8 @@ class MainSidePanel extends StatelessWidget {
                       letterSpacing: 2.0,
                     ),
                   ),
-                  
                 ],
               ),
-              
             ],
           ),
         );
@@ -569,90 +553,210 @@ class MainSidePanel extends StatelessWidget {
   }
 
   Widget _buildTorpedoFleetWidget() {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1A20),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: Colors.white.withAlpha(30)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.rocket_launch, color: Colors.green, size: 16),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A20),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.white.withAlpha(30)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "TORPEDO 1",
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    const Icon(
+                      Icons.rocket_launch,
+                      color: Colors.green,
+                      size: 16,
                     ),
-                    const Text(
-                      "READY",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        fontFamily: 'Courier',
-                      ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "TORPEDO 1",
+                          style: TextStyle(
+                            color: Colors.white54,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Text(
+                          "READY",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'Courier',
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
+
+            const SizedBox(width: 8),
+
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A20),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.white.withAlpha(30)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.rocket_launch,
+                      color: Colors.green,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "TORPEDO 2",
+                          style: TextStyle(
+                            color: Colors.white54,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Text(
+                          "READY",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'Courier',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-
-        const SizedBox(width: 8),
-
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1A20),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: Colors.white.withAlpha(30)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.rocket_launch, color: Colors.green, size: 16),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+        SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A20),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.white.withAlpha(30)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "TORPEDO 2",
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    const Icon(
+                      Icons.rocket_launch,
+                      color: Colors.green,
+                      size: 16,
                     ),
-                    const Text(
-                      "READY",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        fontFamily: 'Courier',
-                      ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "TORPEDO 3",
+                          style: TextStyle(
+                            color: Colors.white54,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Text(
+                          "READY",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'Courier',
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
+
+            const SizedBox(width: 8),
+
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A20),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.white.withAlpha(30)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.rocket_launch,
+                      color: Colors.green,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "TORPEDO 4",
+                          style: TextStyle(
+                            color: Colors.white54,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Text(
+                          "READY",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'Courier',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -678,7 +782,7 @@ class MainSidePanel extends StatelessWidget {
           constraints: const BoxConstraints(),
           padding: EdgeInsets.zero,
           onPressed: () {
-            isMenuOpen.value = true;
+            AppData.showSettings.value = true;
           },
         ),
       ],

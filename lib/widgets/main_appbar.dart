@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import '../data/mavlink_data.dart';
-
 import '../data/app_data.dart';
 import '../services/notifier_service.dart';
+import '../services/settings_service.dart';
+import '../utils/joystick.dart';
+import '../services/mavlink_service.dart';
+
+final mavlinkService = MavlinkService();
 
 class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
   const MainAppbar({super.key});
@@ -47,11 +51,12 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
-        AppBarIndicator(
-          listenableStatus: AppData.joystickStatus,
-          icon: Icons.sports_esports,
-          tooltipMessage: "Joystick Controller Status",
-        ),
+        // AppBarIndicator(
+        //   listenableStatus: AppData.joystickStatus,
+        //   icon: Icons.sports_esports,
+        //   tooltipMessage: "Joystick Controller Status",
+        // ),
+        JoystickIndicator(),
         ValueListenableBuilder<int>(
           valueListenable: NotifierService.connectionTrigger,
           builder: (context, triggerValue, child) {
@@ -65,6 +70,9 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
                   fontFamily: 'Courier',
                 ),
               ),
+              onTriggered: () {
+                Joystick.startAutoConnectJoystick();
+              },
             );
           },
         ),
@@ -79,59 +87,79 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
 
             final Color bgColor = neonColor.withAlpha(20);
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeOutCirc,
+            return GestureDetector(
+              onTap: () async {
+                if (isConnected) {
+                  await mavlinkService.disconnect();
+                } else {
+                  await mavlinkService.connect(
+                    host: SettingsService.vesselIp,
+                    port: SettingsService.udpPort,
+                  );
+                }
+              },
+              child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 4,
+                  horizontal: 16,
+                  vertical: 12,
                 ),
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  border: Border(
-                    left: BorderSide(color: neonColor, width: 2.0),
-                    right: BorderSide(
-                      color: neonColor.withAlpha(100),
-                      width: 1.0,
-                    ),
-                    top: BorderSide(color: neonColor.withAlpha(50), width: 1.0),
-                    bottom: BorderSide(
-                      color: neonColor.withAlpha(50),
-                      width: 1.0,
-                    ),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutCirc,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 4,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: neonColor.withAlpha(30),
-                      blurRadius: 12,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      isConnected ? "CONNECTED" : "DISCONNECTED",
-                      style: TextStyle(
-                        color: neonColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.5,
-                        shadows: [
-                          Shadow(
-                            color: neonColor.withAlpha(150),
-                            blurRadius: 6,
-                          ),
-                        ],
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    border: Border(
+                      left: BorderSide(color: neonColor, width: 2.0),
+                      right: BorderSide(
+                        color: neonColor.withAlpha(100),
+                        width: 1.0,
+                      ),
+                      top: BorderSide(
+                        color: neonColor.withAlpha(50),
+                        width: 1.0,
+                      ),
+                      bottom: BorderSide(
+                        color: neonColor.withAlpha(50),
+                        width: 1.0,
                       ),
                     ),
-                  ],
+                    boxShadow: [
+                      BoxShadow(
+                        color: neonColor.withAlpha(30),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isConnected ? "CONNECTED" : "DISCONNECTED",
+                        style: TextStyle(
+                          color: neonColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.5,
+                          shadows: [
+                            Shadow(
+                              color: neonColor.withAlpha(150),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
+
+            // return
           },
         ),
       ],
@@ -157,30 +185,28 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-class AppBarIndicator extends StatelessWidget {
-  final ValueNotifier<bool> listenableStatus;
-  final IconData icon;
-  final String tooltipMessage;
-
-  const AppBarIndicator({
-    super.key,
-    required this.listenableStatus,
-    required this.icon,
-    required this.tooltipMessage,
-  });
-
+class JoystickIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: listenableStatus,
+    return ValueListenableBuilder<JoystickStatus>(
+      valueListenable: AppData.joystickStatus,
       builder: (context, isActive, _) {
         return Tooltip(
-          message: tooltipMessage,
+          message: (AppData.joystickStatus.value == JoystickStatus.connected)
+              ? "Joystick is Connected"
+              : ((AppData.joystickStatus.value == JoystickStatus.disconnected)
+                    ? "Joystick is Disconnected"
+                    : "Joystick is Connecting"),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Icon(
-              icon,
-              color: isActive ? Colors.green : Colors.red,
+              Icons.sports_esports,
+              color: (AppData.joystickStatus.value == JoystickStatus.connected)
+                  ? Colors.green
+                  : ((AppData.joystickStatus.value ==
+                            JoystickStatus.disconnected)
+                        ? Colors.red
+                        : Colors.orange),
               size: 18,
             ),
           ),

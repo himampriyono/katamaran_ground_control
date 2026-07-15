@@ -7,6 +7,9 @@ class NotifierService {
   static final ValueNotifier<int> statusTrigger = ValueNotifier<int>(0);
   static final ValueNotifier<int> vfrTrigger = ValueNotifier<int>(0);
   static final ValueNotifier<int> homeTrigger = ValueNotifier<int>(0);
+  static final ValueNotifier<int> rcTrigger = ValueNotifier<int>(0);
+  static final ValueNotifier<int> pwmTrigger = ValueNotifier<int>(0);
+  static final ValueNotifier<int> parameterTrigger = ValueNotifier<int>(0);
 
   static void triggerConnectionUpdate() => connectionTrigger.value++;
   static void triggerAttitudeUpdate() => attitudeTrigger.value++;
@@ -14,4 +17,7 @@ class NotifierService {
   static void triggerStatusUpdate() => statusTrigger.value++;
   static void triggerVfrUpdate() => vfrTrigger.value++;
   static void triggerHomeUpdate() => homeTrigger.value++;
+  static void triggerRcUpdate() => rcTrigger.value++;
+  static void triggerPwmUpdate() => pwmTrigger.value++;
+  static void triggerParameterUpdate() => parameterTrigger.value++;
 }
