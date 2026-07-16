@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../services/mission_service.dart';
 import '../widgets/action_button.dart';
 import '../widgets/setting_page_header.dart';
 import '../widgets/settings_group.dart';
@@ -41,7 +42,9 @@ class VehiclePage extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 6),
+          const Divider(),
+          const SizedBox(height: 6),
           SettingsGroup(
             title: "Parameters List",
             child: SettingsTile(
@@ -62,23 +65,36 @@ class VehiclePage extends StatelessWidget {
           ),
           SizedBox(height: 12),
           SettingsGroup(
-            title: "Output",
+            title: "TES",
             child: SettingsTile(
-              title: "PWM Output",
+              title: "Tes Misi",
               trailing: ActionButton(
-                text: "Open Output Monitor",
-                color: Colors.orange,
+                text: "Dw misi",
+                color: Colors.red,
                 onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) {
-                      return PwmOutputMonitor();
-                    },
-                  );
+                  MissionService.requestMissionList();
                 },
               ),
             ),
           ),
+          // SettingsGroup(
+          //   title: "Output",
+          //   child: SettingsTile(
+          //     title: "PWM Output",
+          //     trailing: ActionButton(
+          //       text: "Open Output Monitor",
+          //       color: Colors.orange,
+          //       onTap: () {
+          //         showDialog(
+          //           context: context,
+          //           builder: (_) {
+          //             return PwmOutputMonitor();
+          //           },
+          //         );
+          //       },
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

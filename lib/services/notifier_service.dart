@@ -10,6 +10,7 @@ class NotifierService {
   static final ValueNotifier<int> rcTrigger = ValueNotifier<int>(0);
   static final ValueNotifier<int> pwmTrigger = ValueNotifier<int>(0);
   static final ValueNotifier<int> parameterTrigger = ValueNotifier<int>(0);
+  static final ValueNotifier<int> missionTrigger = ValueNotifier<int>(0);
 
   static void triggerConnectionUpdate() => connectionTrigger.value++;
   static void triggerAttitudeUpdate() => attitudeTrigger.value++;
@@ -20,4 +21,5 @@ class NotifierService {
   static void triggerRcUpdate() => rcTrigger.value++;
   static void triggerPwmUpdate() => pwmTrigger.value++;
   static void triggerParameterUpdate() => parameterTrigger.value++;
+  static void triggerMissionUpdate() => missionTrigger.value++;
 }

@@ -23,10 +23,7 @@ class ParameterTile extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: InkWell(
-          // onTap: onTap,
-          onTap: () {
-            debugPrint(metadata!.units);
-          },
+          onTap: onTap,
           child: Tooltip(
             waitDuration: const Duration(seconds: 1),
             showDuration: const Duration(seconds: 8),

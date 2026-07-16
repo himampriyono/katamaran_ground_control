@@ -151,6 +151,7 @@ class JoystickPage extends StatelessWidget {
               ],
             ),
           ),
+          const Divider(),
           SettingsGroup(
             title: "Tools",
             child: Column(

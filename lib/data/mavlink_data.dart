@@ -26,10 +26,16 @@ class MavlinkData {
   static HomePosition? lastHomePosition;
   static List<int> rcChannels = List.filled(16, 1500);
   static List<int> pwmOutput = List.filled(16, 950);
+
   static final Map<String, MavParameter> parameters = {};
   static int parameterCount = 0;
   static int parameterLoaded = 0;
   static bool isLoadingParameters = false;
+
+  static final List<MissionItem> missionItems = [];
+  static bool isLoadingMission = false;
+  static int missionCount = 0;
+  static int missionLoaded = 0;
 
   static void reset() {
     isMavlinkConnected = false;

@@ -4,10 +4,11 @@ import '../pages/about_page.dart';
 import '../pages/general_page.dart';
 import '../pages/joystick_page.dart';
 import '../pages/map_page.dart';
+import '../pages/mission_page.dart';
 import '../pages/telemetry_page.dart';
 import '../pages/vehicle_page.dart';
 
-enum SettingTab { general, vehicle, joystick, map, telemetry, about }
+enum SettingTab { general, vehicle, joystick, mission, telemetry, about }
 
 class SettingsWindow extends StatefulWidget {
   const SettingsWindow({super.key});
@@ -120,7 +121,7 @@ class _SettingWindowsState extends State<SettingsWindow> {
             tab: SettingTab.joystick,
           ),
 
-          _buildSidebarItem(icon: Icons.map, title: "Map", tab: SettingTab.map),
+          _buildSidebarItem(icon: Icons.route, title: "Mission", tab: SettingTab.mission),
 
           _buildSidebarItem(
             icon: Icons.settings_input_antenna,
@@ -151,8 +152,8 @@ class _SettingWindowsState extends State<SettingsWindow> {
       case SettingTab.joystick:
         return const JoystickPage();
 
-      case SettingTab.map:
-        return const MapPage();
+      case SettingTab.mission:
+        return const MissionPage();
 
       case SettingTab.telemetry:
         return const TelemetryPage();

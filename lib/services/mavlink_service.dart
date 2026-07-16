@@ -9,6 +9,7 @@ import '../data/app_data.dart';
 import '../data/mavlink_data.dart';
 import '../models/mav_parameter.dart';
 import '../utils/app_utils.dart';
+import 'mission_service.dart';
 import 'notifier_service.dart';
 import '../widgets/snackbar.dart';
 
@@ -210,11 +211,6 @@ class MavlinkService {
       MavlinkData.parameterLoaded = message.paramIndex + 1;
       MavlinkData.parameterCount = message.paramCount;
 
-      // if (message.paramIndex % 25 == 0 ||
-      //     message.paramIndex + 1 == message.paramCount) {
-      //   NotifierService.triggerParameterUpdate();
-      // }
-
       if (message.paramIndex + 1 == message.paramCount) {
         MavlinkData.isLoadingParameters = false;
         NotifierService.triggerParameterUpdate();
@@ -222,8 +218,6 @@ class MavlinkService {
           "Parameter loaded successfully (${MavlinkData.parameterCount} parameter)",
         );
       }
-
-      // ============
       NotifierService.triggerParameterUpdate();
       if (_parameterWriteCompleter != null) {
         if (name == _waitingParameterName &&
@@ -234,6 +228,12 @@ class MavlinkService {
           _waitingParameterValue = null;
         }
       }
+    } else if (message is MissionCount) {
+      MissionService.handleMissionCount(message);
+    } else if (message is MissionItemInt) {
+      MissionService.handleMissionItem(message);
+    // } else if (message is MissionAck) {
+    //   MissionService.handleMissionAck(message);
     }
   }
 
@@ -573,4 +573,28 @@ class MavlinkService {
 
     return _parameterWriteCompleter!.future;
   }
+
+  static void requestMissionList() {
+    final message = MissionRequestList(
+      targetSystem: MavlinkData.targetSystemId ?? 1,
+      targetComponent: MavlinkData.targetComponentId ?? 1,
+      missionType: mavMissionTypeMission,
+    );
+
+    _queueMessage(message);
+  }
+
+  static void requestMissionItem(int sequence) {
+    final message = MissionRequestInt(
+      seq: sequence,
+      targetSystem: MavlinkData.targetSystemId ?? 1,
+      targetComponent: MavlinkData.targetComponentId ?? 1,
+      missionType: mavMissionTypeMission,
+    );
+
+    _queueMessage(message);
+    debugPrint("Request Mission Item $sequence");
+  }
+
+  // static Future<bool> uploadMission() {}
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 import 'data/app_data.dart';
 import 'screens/main_dashboard.dart';
 import 'services/mavlink_service.dart';
@@ -11,6 +12,17 @@ final mavlinkService = MavlinkService();
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await windowManager.ensureInitialized();
+  const options = WindowOptions(
+    fullScreen: true,
+    center: true,
+    title: ""
+  );
+  windowManager.waitUntilReadyToShow(options, () async {
+    await windowManager.show();
+    await windowManager.focus();
+  });
 
   await SettingsService.initialize();
   SettingsService.loadSettings();

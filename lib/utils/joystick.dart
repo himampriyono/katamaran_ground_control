@@ -89,6 +89,19 @@ class Joystick {
             channels.add(value);
           }
 
+          bool valid = true;
+
+          for (final value in channels) {
+            if (value < 800 || value > 2200) {
+              valid = false;
+              break;
+            }
+          }
+
+          if (!valid) {
+            continue;
+          }
+
           final calibrationState = packet[3 + channelBytes];
 
           if (AppData.joystickStatus.value != JoystickStatus.connected) {
