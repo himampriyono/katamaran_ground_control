@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../data/mavlink_data.dart';
 import '../../../services/mission_service.dart';
+import '../../../services/notifier_service.dart';
 import '../widgets/action_button.dart';
+import '../widgets/mission_tile.dart';
 import '../widgets/setting_page_header.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/settings_tile.dart';
@@ -20,20 +23,51 @@ class MissionPage extends StatelessWidget {
             title: "Mission",
             subtitle: "Configure the ship auto mission",
           ),
-          SizedBox(height: 4),
-          Column(
+          SizedBox(height: 12),
+          Row(
             children: [
-              SettingsTile(
-                title: "Mission Manager",
-                trailing: ActionButton(
-                  text: "Tes Download Mission",
-                  color: Colors.orange,
-                  onTap: () {
-                    MissionService.requestMissionList();
-                  },
-                ),
+              ActionButton(
+                text: "Download",
+                color: Colors.orange,
+                onTap: () {
+                  MissionService.requestMissionList();
+                },
+              ),
+              const SizedBox(width: 24),
+              ActionButton(text: "Upload", color: Colors.green, onTap: () {}),
+              const SizedBox(width: 24),
+              ActionButton(text: "Edit", color: Colors.cyan, onTap: () {}),
+            ],
+          ),
+          const SizedBox(height: 5),
+          const Divider(),
+          const SizedBox(height: 5),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Mission List",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ],
+          ),
+          SizedBox(height: 12),
+          Expanded(
+            child: ValueListenableBuilder(
+              valueListenable: NotifierService.missionTrigger,
+              builder: (context, _, _) {
+                return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: MavlinkData.missionItems.length,
+                  itemBuilder: (context, index) {
+                    return MissionTile(
+                      mission: MavlinkData.missionItems[index],
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
