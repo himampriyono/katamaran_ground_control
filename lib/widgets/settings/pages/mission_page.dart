@@ -6,8 +6,7 @@ import '../../../services/notifier_service.dart';
 import '../widgets/action_button.dart';
 import '../widgets/mission_tile.dart';
 import '../widgets/setting_page_header.dart';
-import '../widgets/settings_group.dart';
-import '../widgets/settings_tile.dart';
+import '../windows/mission_editor.dart';
 
 class MissionPage extends StatelessWidget {
   const MissionPage({super.key});
@@ -36,7 +35,18 @@ class MissionPage extends StatelessWidget {
               const SizedBox(width: 24),
               ActionButton(text: "Upload", color: Colors.green, onTap: () {}),
               const SizedBox(width: 24),
-              ActionButton(text: "Edit", color: Colors.cyan, onTap: () {}),
+              ActionButton(
+                text: "Edit",
+                color: Colors.cyan,
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) {
+                      return MissionEditor();
+                    },
+                  );
+                },
+              ),
             ],
           ),
           const SizedBox(height: 5),

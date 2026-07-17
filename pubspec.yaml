@@ -28,4 +28,5 @@ flutter:
   assets:
     - assets/ship.png
     - assets/arrow.png
+    - assets/cat.gif
     - assets/parameters/apm.pdef.xml
