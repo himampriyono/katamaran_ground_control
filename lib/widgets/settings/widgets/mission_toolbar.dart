@@ -24,10 +24,10 @@ class MissionToolbar extends StatelessWidget {
           Column(
             spacing: 8,
             children: [
-              _buildButton(
-                icon: Icons.upload,
-                text: "Upload",
+              OutlinedButton.icon(
                 onPressed: onUpload,
+                icon: Icon(Icons.download, size: 18),
+                label: Text("Upload"),
               ),
               const SizedBox(width: 6),
               OutlinedButton.icon(

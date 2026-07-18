@@ -75,6 +75,42 @@ class MissionService {
     NotifierService.triggerMissionUpdate();
   }
 
-  static void handleMissionAck() {}
-  static void uploadMission() {}
+  static Future<void> uploadMission() async {
+    for (final mission in MavlinkData.missionItems) {
+      debugPrint(
+        "SEQ=${mission.seq} "
+        "CMD=${mission.command} "
+        "LAT=${mission.x} "
+        "LON=${mission.y}",
+      );
+    }
+    
+    MavlinkService.sendMissionCount(
+      targetSystem: MavlinkData.targetSystemId ?? 1,
+      targetComponent: MavlinkData.targetComponentId ?? 1,
+      count: MavlinkData.missionItems.length,
+    );
+  }
+
+  static void handleMissionRequestInt(MissionRequestInt packet) {
+    debugPrint("[Mission] requested ${packet.seq}");
+
+    if (packet.seq >= MavlinkData.missionItems.length) {
+      return;
+    }
+
+    final mission = MavlinkData.missionItems[packet.seq];
+
+    MavlinkService.sendMissionitemInt(
+      mission: mission,
+      targetSystem: MavlinkData.targetSystemId ?? 1,
+      targetComponent: MavlinkData.targetComponentId ?? 1,
+    );
+  }
+
+  static void sendMissionCount() {}
+  static void sendMissionItemInt() {}
+  static void handleMissionAck(MissionAck packet) {
+    debugPrint("[Mission] Upload finished: ${packet.type}");
+  }
 }

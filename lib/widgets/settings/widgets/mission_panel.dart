@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:katamaran_ground_control/utils/mission_extensions.dart';
 import '../../../data/mavlink_data.dart';
 import '../../../services/mission_service.dart';
 import '../../../services/notifier_service.dart';
@@ -20,6 +21,9 @@ class MissionPanel extends StatelessWidget {
             onDownload: () {
               MissionService.requestMissionList();
             },
+            onUpload: (){
+              MissionService.uploadMission();
+            },
           ),
           SizedBox(height: 5),
           const Divider(height: 2),
@@ -29,12 +33,34 @@ class MissionPanel extends StatelessWidget {
             child: ValueListenableBuilder(
               valueListenable: NotifierService.missionTrigger,
               builder: (context, _, _) {
-                return ListView.builder(
-                  padding: const EdgeInsets.all(8),
+                // return ListView.builder(
+                //   padding: const EdgeInsets.all(8),
+                //   itemCount: MavlinkData.missionItems.length,
+                //   itemBuilder: (context, index) {
+                //     return MissionEditorTile(
+                //       mission: MavlinkData.missionItems[index],
+                //       onMissionChange: (updatedMission) {
+                //         MavlinkData.missionItems[index] = updatedMission;
+
+                //         NotifierService.triggerMissionUpdate();
+                //       },
+                //     );
+                //   },
+                // );
+                return ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  buildDefaultDragHandles: false,
                   itemCount: MavlinkData.missionItems.length,
+                  onReorder: _onReorder,
                   itemBuilder: (context, index) {
                     return MissionEditorTile(
+                      key: ValueKey(MavlinkData.missionItems[index].seq),
                       mission: MavlinkData.missionItems[index],
+                      onMissionChange: (mission) {
+                        MavlinkData.missionItems[index] = mission;
+                        NotifierService.triggerMissionUpdate();
+                      },
                     );
                   },
                 );
@@ -51,9 +77,25 @@ class MissionPanel extends StatelessWidget {
       height: 48,
       alignment: Alignment.center,
       child: Text(
-        "Mission List (${MavlinkData.missionItems.length})",
+        "Mission List",
         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
     );
+  }
+
+  void _onReorder(int oldIndex, int newIndex) {
+    // debugPrint("move $oldIndex -> $newIndex");
+    if (newIndex > oldIndex){
+      newIndex--;
+    }
+
+    final item = MavlinkData.missionItems.removeAt(oldIndex);
+    MavlinkData.missionItems.insert(newIndex, item);
+
+    for (var i = 0; i < MavlinkData.missionItems.length; i++){
+      MavlinkData.missionItems[i] = MavlinkData.missionItems[i].copyWith(seq: i);
+    }
+
+    NotifierService.triggerMissionUpdate();
   }
 }

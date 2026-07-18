@@ -232,8 +232,10 @@ class MavlinkService {
       MissionService.handleMissionCount(message);
     } else if (message is MissionItemInt) {
       MissionService.handleMissionItem(message);
-    // } else if (message is MissionAck) {
-    //   MissionService.handleMissionAck(message);
+    } else if (message is MissionRequestInt) {
+      MissionService.handleMissionRequestInt(message);
+    } else if (message is MissionAck) {
+      MissionService.handleMissionAck(message);
     }
   }
 
@@ -596,5 +598,50 @@ class MavlinkService {
     debugPrint("Request Mission Item $sequence");
   }
 
-  // static Future<bool> uploadMission() {}
+  static void sendMissionCount({
+    required int targetSystem,
+    required int targetComponent,
+    required int count,
+  }) {
+    final packet = MissionCount(
+      targetSystem: targetSystem,
+      targetComponent: targetComponent,
+      count: count,
+      missionType: mavMissionTypeMission,
+      opaqueId: 0,
+    );
+
+    _queueMessage(packet);
+  }
+
+  static void sendMissionitemInt({
+    required MissionItem mission,
+    required int targetSystem,
+    required int targetComponent,
+  }) {
+    final packet = MissionItemInt(
+      param1: mission.param1,
+      param2: mission.param2,
+      param3: mission.param3,
+      param4: mission.param4,
+      x: mission.x.toInt(),
+      y: mission.y.toInt(),
+      z: mission.z,
+      seq: mission.seq,
+      command: mission.command,
+      targetSystem: targetSystem,
+      targetComponent: targetComponent,
+      frame: mission.frame,
+      current: mission.current,
+      autocontinue: mission.autocontinue,
+      missionType: mission.missionType,
+    );
+    debugPrint("[Mission] Sending item ${mission.seq}");
+
+    _queueMessage(packet);
+  }
+
+  static Future<void> uploadMission() async {
+    final count = MavlinkData.missionItems.length;
+  }
 }

@@ -15,7 +15,7 @@ Future<void> main(List<String> args) async {
 
   await windowManager.ensureInitialized();
   const options = WindowOptions(
-    fullScreen: true,
+    // fullScreen: true,
     center: true,
     title: ""
   );

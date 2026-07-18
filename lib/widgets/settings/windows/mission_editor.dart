@@ -77,22 +77,18 @@ class MissionEditor extends StatelessWidget {
 
   Widget _buildMapPanel(BuildContext context) {
     return Expanded(
-      // child: Center(
-      // child: Text(
-      //   "Map Placeholder",
-      //   style: TextStyle(
-      //     fontSize: 18,
-      //     color: Colors.white54
-      //   ),
-      // ),
-
-      // ),
       child: Center(
-        child: Image.asset(
-          'assets/cat.gif',
-          fit: BoxFit.contain,
+        child: Text(
+          "Map Placeholder",
+          style: TextStyle(fontSize: 18, color: Colors.white54),
         ),
       ),
+      // child: Center(
+      //   child: Image.asset(
+      //     'assets/cat.gif',
+      //     fit: BoxFit.contain,
+      //   ),
+      // ),
     );
   }
 }
