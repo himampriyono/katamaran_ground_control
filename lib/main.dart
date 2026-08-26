@@ -7,6 +7,7 @@ import 'services/parameter_metadata_service.dart';
 import 'widgets/snackbar.dart';
 import 'utils/joystick.dart';
 import 'services/settings_service.dart';
+import 'debug/mbtiles_test_page.dart';
 
 final mavlinkService = MavlinkService();
 
@@ -58,6 +59,7 @@ class MainApp extends StatelessWidget {
       ),
       home: const MainDashboard(),
       // home: const JoystickTest(),
+      // home: const MbTilesTestPage(),
     );
   }
 }

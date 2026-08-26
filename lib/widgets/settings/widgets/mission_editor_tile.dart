@@ -1,15 +1,22 @@
 import 'package:dart_mavlink/dialects/common.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+import '../../../data/mavlink_data.dart';
+import '../../../services/notifier_service.dart';
 import '../../../utils/mission_extensions.dart';
 
 class MissionEditorTile extends StatelessWidget {
   final MissionItem mission;
   final ValueChanged<MissionItem> onMissionChange;
+  final MissionItem? previousMission;
+  final VoidCallback onDelete;
 
   const MissionEditorTile({
     super.key,
     required this.mission,
     required this.onMissionChange,
+    required this.previousMission,
+    required this.onDelete,
   });
 
   @override
@@ -47,11 +54,30 @@ class MissionEditorTile extends StatelessWidget {
               onTap: () => _showCoordinateDialog(context),
             ),
           ),
-          const Spacer(),
-          // const Icon(Icons.drag_handle, color: Colors.white54),
+          SizedBox(
+            width: 70,
+            child: _MissionDistanceCell(
+              previousMission: previousMission,
+              mission: mission,
+            ),
+          ),
+          SizedBox(
+            width: 45,
+            child: IconButton(
+              tooltip: "Delete waypoint",
+              splashRadius: 18,
+              padding: EdgeInsets.zero,
+              icon: const Icon(
+                Icons.delete_outline,
+                size: 18,
+                color: Colors.redAccent,
+              ),
+              onPressed: onDelete,
+            ),
+          ),
           ReorderableDragStartListener(
-            child: const Icon(Icons.drag_indicator, color: Colors.white54),
             index: mission.seq,
+            child: const Icon(Icons.menu_sharp, color: Colors.white54),
           ),
         ],
       ),
@@ -77,8 +103,6 @@ class MissionEditorTile extends StatelessWidget {
   void _changeSequence(int seq) {
     onMissionChange(mission.copyWith(seq: seq));
   }
-
-  
 
   Future<void> _showCoordinateDialog(BuildContext context) async {
     final latitudeController = TextEditingController(
@@ -203,6 +227,45 @@ class _MissionCoordinateCell extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Text(value.toStringAsFixed(7), overflow: TextOverflow.ellipsis),
+    );
+  }
+}
+
+class _MissionDistanceCell extends StatelessWidget {
+  const _MissionDistanceCell({
+    required this.previousMission,
+    required this.mission,
+  });
+
+  final MissionItem? previousMission;
+  final MissionItem mission;
+
+  @override
+  Widget build(BuildContext context) {
+    if (previousMission == null) {
+      return const Text(
+        "---",
+        textAlign: TextAlign.right,
+        style: TextStyle(color: Colors.white54),
+      );
+    }
+
+    const distance = Distance();
+
+    final meter = distance(
+      LatLng(previousMission!.x, previousMission!.y),
+      LatLng(mission.x, mission.y),
+    );
+
+    final text = meter >= 1000
+        ? "${(meter / 1000).toStringAsFixed(2)} km"
+        : "${meter.toStringAsFixed(1)} m";
+
+    return Text(
+      text,
+      textAlign: TextAlign.right,
+      style: const TextStyle(color: Colors.white70, fontSize: 12),
+      overflow: TextOverflow.ellipsis,
     );
   }
 }

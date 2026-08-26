@@ -3,7 +3,6 @@ import '../../../data/app_data.dart';
 import '../pages/about_page.dart';
 import '../pages/general_page.dart';
 import '../pages/joystick_page.dart';
-import '../pages/map_page.dart';
 import '../pages/mission_page.dart';
 import '../pages/telemetry_page.dart';
 import '../pages/vehicle_page.dart';

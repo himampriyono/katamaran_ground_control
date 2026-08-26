@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
 enum SpeedUnit { metric, naval }
 
@@ -8,13 +9,20 @@ enum JoystickStatus { connected, connecting, disconnected }
 
 enum JoystickCalibrationStatus { normal, calibrating }
 
+enum MapType { vectorOffline, satelliteOffline, googleMap }
+
+enum GotoMenuAction { none, goHere, circleHere }
+
 class AppData {
-  static final appName = "Katamaran ######";
+  static final appName = "Katamaran Mission Monitoring Control";
   static final ValueNotifier<SpeedUnit> selectedSpeedUnit = ValueNotifier(
     SpeedUnit.metric,
   );
   static final ValueNotifier<PositionUnit> selectedPosUnit = ValueNotifier(
     PositionUnit.latlon,
+  );
+  static final ValueNotifier<MapType> selectedMapType = ValueNotifier(
+    MapType.vectorOffline,
   );
   static ValueNotifier<JoystickStatus> joystickStatus = ValueNotifier(
     JoystickStatus.disconnected,
@@ -35,5 +43,11 @@ class AppData {
     List.filled(16, 1500),
   );
 
+  static ValueNotifier<LatLng> objectCoord = ValueNotifier(LatLng(0, 0));
+
   static ValueNotifier<bool> showSettings = ValueNotifier(false);
+
+  static ValueNotifier<bool> showMissionOnMainMap = ValueNotifier(true);
+
+  static GotoMenuAction gotoAction = GotoMenuAction.none;
 }

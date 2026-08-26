@@ -1,9 +1,24 @@
+import 'package:dart_mavlink/dialects/common.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
+import '../../../data/mavlink_data.dart';
+import '../../../services/notifier_service.dart';
+import '../../map/map.dart';
 import '../widgets/mission_panel.dart';
 
-class MissionEditor extends StatelessWidget {
+class MissionEditor extends StatefulWidget {
   const MissionEditor({super.key});
+
+  @override
+  State<MissionEditor> createState() => _MissionEditorState();
+}
+
+class _MissionEditorState extends State<MissionEditor> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,40 +70,32 @@ class MissionEditor extends StatelessWidget {
     );
   }
 
-  // Widget _buildMissionPanel(BuildContext context) {
-  //   return SizedBox(
-  //     width: 300,
-  //     child: Column(
-  //       children: [
-  //         Container(
-  //           height: 42,
-  //           alignment: Alignment.center,
-  //           child: const Text(
-  //             "Mission List",
-  //             style: TextStyle(fontWeight: FontWeight.bold),
-  //           ),
-  //         ),
-  //         const Divider(height: 1),
-  //         const Expanded(child: Center(child: Text("Mission List"))),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   Widget _buildMapPanel(BuildContext context) {
-    return Expanded(
-      child: Center(
-        child: Text(
-          "Map Placeholder",
-          style: TextStyle(fontSize: 18, color: Colors.white54),
-        ),
-      ),
-      // child: Center(
-      //   child: Image.asset(
-      //     'assets/cat.gif',
-      //     fit: BoxFit.contain,
-      //   ),
-      // ),
+    return Expanded(child: MapWidget(onMapTap: _addMissionWaypoint));
+  }
+
+  void _addMissionWaypoint(LatLng point) {
+    final mission = MissionItem(
+      param1: 0,
+      param2: 0,
+      param3: 0,
+      param4: double.nan,
+      x: point.latitude,
+      y: point.longitude,
+      z: 0,
+      seq: MavlinkData.missionItems.isEmpty
+          ? 1
+          : MavlinkData.missionItems.last.seq + 1,
+      command: mavCmdNavWaypoint,
+      targetSystem: MavlinkData.targetSystemId ?? 1,
+      targetComponent: MavlinkData.targetComponentId ?? 1,
+      frame: mavFrameGlobalRelativeAlt,
+      current: 0,
+      autocontinue: 1,
+      missionType: mavMissionTypeMission,
     );
+
+    MavlinkData.missionItems.add(mission);
+    NotifierService.triggerMissionUpdate();
   }
 }

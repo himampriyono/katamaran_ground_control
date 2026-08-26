@@ -9,8 +9,6 @@ import '../utils/app_utils.dart';
 class MainSidePanel extends StatelessWidget {
   const MainSidePanel({super.key});
 
-  // static final ValueNotifier<bool> isMenuOpen = ValueNotifier(false);
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -41,8 +39,6 @@ class MainSidePanel extends StatelessWidget {
 
               _buildPanelHeader("TACTICAL"),
               const SizedBox(height: 12),
-              _buildTorpedoFleetWidget(),
-              const SizedBox(height: 20),
             ],
           ),
         ],
@@ -153,7 +149,15 @@ class MainSidePanel extends StatelessWidget {
                         MavlinkService.setMode(selectedModeNum);
                       },
                       itemBuilder: (BuildContext context) {
-                        final List<int> availableModes = [0, 4, 10, 11];
+                        final List<int> availableModes = [
+                          0,
+                          4,
+                          5,
+                          9,
+                          10,
+                          11,
+                          15,
+                        ];
 
                         return availableModes.map((int mode) {
                           return PopupMenuItem<int>(
@@ -212,10 +216,16 @@ class MainSidePanel extends StatelessWidget {
         return "MANUAL";
       case 4:
         return "HOLD";
+      case 5:
+        return "LOITER";
+      case 9:
+        return "CIRCLE";
       case 10:
         return "AUTO";
       case 11:
         return "RTL";
+      case 15:
+        return "GUIDED";
       default:
         return "$mode";
     }
@@ -388,116 +398,60 @@ class MainSidePanel extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        "${headingDeg.toStringAsFixed(1)}°",
-                        style: const TextStyle(
-                          color: Colors.orange,
-                          fontSize: 18,
-                          // fontWeight: FontWeight.w900,
-                          fontFamily: 'Courier',
-                        ),
-                      ),
-                      Text(
-                        "HEADING", // Menggabungkan label dan huruf arah
-                        style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 10,
-                          // fontWeight: FontWeight.bold,
-                          letterSpacing: 2.0,
-                        ),
-                      ),
-                    ],
+                  _buildDataItem(
+                    title: "HEADING",
+                    value: "${headingDeg.toStringAsFixed(1)}°",
                   ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
+                  _buildDataItem(
+                    title: "BATTERY",
+                    value:
                         "${(MavlinkData.lastSysStatus?.voltageBattery ?? 0) * 0.001}V",
-                        style: const TextStyle(
-                          color: Colors.orange,
-                          fontSize: 18,
-                          fontFamily: 'Courier',
-                        ),
-                      ),
-                      Text(
-                        "BATTERY",
-                        style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 10,
-                          // fontWeight: FontWeight.bold,
-                          letterSpacing: 2.0,
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
               const SizedBox(height: 3),
-              const Divider(
-                thickness: 0.05,
-                height: 0.5,
-                indent: 12,
-                endIndent: 12,
-                color: Colors.white,
-              ),
+              _buildDataDivider(),
               const SizedBox(height: 3),
               Row(
                 spacing: 4,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        (AppData.selectedSpeedUnit.value == SpeedUnit.metric)
-                            ? "${(MavlinkData.lastVfrHud?.groundspeed ?? 0).toStringAsFixed(1)} m/s"
-                            : "${((MavlinkData.lastVfrHud?.groundspeed ?? 0) * 1.94384).toStringAsFixed(1)} kn",
-                        style: const TextStyle(
-                          color: Colors.orange,
-                          fontSize: 18,
-                          fontFamily: 'Courier',
-                        ),
-                      ),
-                      Text(
-                        "SPEED",
-                        style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 10,
-                          letterSpacing: 2.0,
-                        ),
-                      ),
-                    ],
+                  _buildDataItem(
+                    title: "SPEED",
+                    value: (AppData.selectedSpeedUnit.value == SpeedUnit.metric)
+                        ? "${(MavlinkData.lastVfrHud?.groundspeed ?? 0).toStringAsFixed(1)} m/s"
+                        : "${((MavlinkData.lastVfrHud?.groundspeed ?? 0) * 1.94384).toStringAsFixed(1)} kn",
                   ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        (AppData.selectedSpeedUnit.value == SpeedUnit.metric)
-                            ? "${rawDistToHome.toStringAsFixed(0)} m"
-                            : "${(rawDistToHome / 1852).toStringAsFixed(2)} NM",
-                        style: const TextStyle(
-                          color: Colors.orange,
-                          fontSize: 18,
-                          fontFamily: 'Courier',
-                        ),
-                      ),
-                      Text(
-                        "HOME DIST.",
-                        style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 10,
-                          letterSpacing: 2.0,
-                        ),
-                      ),
-                    ],
+                  _buildDataItem(
+                    title: "HOME",
+                    value: (AppData.selectedSpeedUnit.value == SpeedUnit.metric)
+                        ? "${rawDistToHome.toStringAsFixed(0)} m"
+                        : "${(rawDistToHome / 1852).toStringAsFixed(2)} NM",
+                  ),
+                ],
+              ),
+              const SizedBox(height: 3),
+              _buildDataDivider(),
+              const SizedBox(height: 3),
+              Row(
+                spacing: 4,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _buildDataItem(
+                    title: "SATELLITE",
+                    value:
+                        "${(MavlinkData.lastGpsRawInt?.satellitesVisible) ?? 0}",
+                  ),
+                  _buildDataItem(
+                    title: "NEXT WP",
+                    value: ((MavlinkData.lastHeartbeat?.customMode ?? 0) != 10)
+                        ? "--"
+                        : ((MavlinkData.lastMissionCurrent!.seq <
+                                  MavlinkData.missionItems.length)
+                              ? "${AppUtils.calculateDistance(MavlinkData.lastGlobalPositionInt!.lat / 1e7, MavlinkData.lastGlobalPositionInt!.lon / 1e7, MavlinkData.missionItems[MavlinkData.lastMissionCurrent!.seq - 1].x, MavlinkData.missionItems[MavlinkData.lastMissionCurrent!.seq - 1].y).toStringAsFixed(0)} m"
+                              : "--"),
                   ),
                 ],
               ),
@@ -545,220 +499,54 @@ class MainSidePanel extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 5),
+              Column(
+                spacing: 4,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsetsGeometry.symmetric(horizontal: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ValueListenableBuilder(
+                          valueListenable: AppData.objectCoord,
+                          builder: (context, objPos, _) {
+                            return Text(
+                              (!MavlinkData.isObjectValid)
+                                  ? "--"
+                                  : ((AppData.selectedPosUnit.value ==
+                                            PositionUnit.utm)
+                                        ? "${utmZone}, ${(utmX).toStringAsFixed(2)}, ${(utmY).toStringAsFixed(2)}"
+                                        : "${(MavlinkData.lastGlobalPositionInt?.lat ?? 0) / 1e7}, ${(MavlinkData.lastGlobalPositionInt?.lon ?? 0) / 1e7}"),
+                              style: const TextStyle(
+                                color: Colors.orange,
+                                fontSize: 14,
+                                // fontWeight: FontWeight.w900,
+                                fontFamily: 'Courier',
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    "TARGET POSITION ESTIMATE",
+                    style: const TextStyle(
+                      color: Colors.white38,
+                      fontSize: 10,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildTorpedoFleetWidget() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A20),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.white.withAlpha(30)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.rocket_launch,
-                      color: Colors.green,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "TORPEDO 1",
-                          style: TextStyle(
-                            color: Colors.white54,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Text(
-                          "READY",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            fontFamily: 'Courier',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 8),
-
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A20),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.white.withAlpha(30)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.rocket_launch,
-                      color: Colors.green,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "TORPEDO 2",
-                          style: TextStyle(
-                            color: Colors.white54,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Text(
-                          "READY",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            fontFamily: 'Courier',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A20),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.white.withAlpha(30)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.rocket_launch,
-                      color: Colors.green,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "TORPEDO 3",
-                          style: TextStyle(
-                            color: Colors.white54,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Text(
-                          "READY",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            fontFamily: 'Courier',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 8),
-
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A20),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.white.withAlpha(30)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.rocket_launch,
-                      color: Colors.green,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "TORPEDO 4",
-                          style: TextStyle(
-                            color: Colors.white54,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Text(
-                          "READY",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            fontFamily: 'Courier',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -786,6 +574,56 @@ class MainSidePanel extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildDataItem({
+    required String title,
+    required String value,
+    Color valueColor = Colors.orange,
+    double valueSize = 18,
+  }) {
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: valueColor,
+              fontSize: valueSize,
+              fontFamily: 'Courier',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white38,
+              fontSize: 9,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDataDivider() {
+    return const Padding(
+      padding: EdgeInsetsGeometry.symmetric(vertical: 4),
+      child: Divider(
+        thickness: 0.2,
+        height: 1,
+        indent: 12,
+        endIndent: 12,
+        color: Colors.white12,
+      ),
     );
   }
 }

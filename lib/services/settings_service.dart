@@ -14,6 +14,8 @@ class SettingsService {
   static void loadSettings() {
     AppData.selectedSpeedUnit.value = speedUnit;
     AppData.selectedPosUnit.value = positionUnit;
+    AppData.selectedMapType.value = mapType;
+    AppData.showMissionOnMainMap.value = showMission;
   }
 
   // ============
@@ -33,6 +35,16 @@ class SettingsService {
     return PositionUnit.values[value];
   }
 
+  static MapType get mapType {
+    final value = _prefs.getInt("map.type") ?? 0;
+    return MapType.values[value];
+  }
+
+  static bool get showMission{
+    final value = _prefs.getBool("map.mission_display") ?? false;
+    return value;
+  }
+
   //  --------
 
   static Future<void> setVesselIp(String ip) async {
@@ -49,5 +61,13 @@ class SettingsService {
 
   static Future<void> setPositionUnit(PositionUnit unit) async {
     await _prefs.setInt("display.position_unit", unit.index);
+  }
+
+  static Future<void> setMapType(MapType type) async {
+    await _prefs.setInt("map.type", type.index);
+  }
+
+  static Future<void> setShowMission(bool show) async{
+    await _prefs.setBool("map.mission_display", show);
   }
 }

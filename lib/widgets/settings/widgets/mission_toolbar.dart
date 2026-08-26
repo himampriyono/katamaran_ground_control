@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../data/mavlink_data.dart';
+import '../../../services/notifier_service.dart';
+
 class MissionToolbar extends StatelessWidget {
   final VoidCallback? onDownload;
   final VoidCallback? onUpload;
@@ -26,31 +29,44 @@ class MissionToolbar extends StatelessWidget {
             children: [
               OutlinedButton.icon(
                 onPressed: onUpload,
-                icon: Icon(Icons.download, size: 18),
-                label: Text("Upload"),
+                icon: Icon(Icons.upload, size: 18, color: Colors.orange),
+                label: Text("Upload", style: TextStyle(color: Colors.orange)),
               ),
               const SizedBox(width: 6),
               OutlinedButton.icon(
                 onPressed: onDownload,
-                icon: Icon(Icons.download, size: 18),
-                label: Text("Download"),
+                icon: Icon(Icons.download, size: 18, color: Colors.green),
+                label: Text("Download", style: TextStyle(color: Colors.green)),
               ),
             ],
+          ),
+          const SizedBox(width: 6),
+          OutlinedButton.icon(
+            onPressed: () {
+              MavlinkData.missionItems.clear();
+              NotifierService.triggerMissionUpdate();
+            },
+            icon: Icon(
+              Icons.cleaning_services_rounded,
+              size: 18,
+              color: Colors.red,
+            ),
+            label: Text("Clear", style: TextStyle(color: Colors.red)),
           ),
           const SizedBox(width: 6),
           Column(
             spacing: 8,
             children: [
-              _buildButton(
-                icon: Icons.save_alt,
-                text: "Export",
+              OutlinedButton.icon(
                 onPressed: onExport,
+                icon: Icon(Icons.save_as_sharp, size: 18, color: Colors.purple),
+                label: Text("Export", style: TextStyle(color: Colors.purple)),
               ),
               const SizedBox(width: 6),
-              _buildButton(
-                icon: Icons.folder_open,
-                text: "Import",
+              OutlinedButton.icon(
                 onPressed: onImport,
+                icon: Icon(Icons.folder_open, size: 18, color: Colors.blue),
+                label: Text("Import", style: TextStyle(color: Colors.blue)),
               ),
             ],
           ),

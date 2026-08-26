@@ -1,4 +1,6 @@
 import 'package:dart_mavlink/dialects/common.dart';
+import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import '../models/mav_parameter.dart';
 
 class MavlinkData {
@@ -24,8 +26,10 @@ class MavlinkData {
   static VfrHud? lastVfrHud;
   static GlobalPositionInt? lastGlobalPositionInt;
   static HomePosition? lastHomePosition;
+  static GpsRawInt? lastGpsRawInt;
   static List<int> rcChannels = List.filled(16, 1500);
   static List<int> pwmOutput = List.filled(16, 950);
+  static MissionCurrent? lastMissionCurrent;
 
   static final Map<String, MavParameter> parameters = {};
   static int parameterCount = 0;
@@ -36,6 +40,15 @@ class MavlinkData {
   static bool isLoadingMission = false;
   static int missionCount = 0;
   static int missionLoaded = 0;
+
+  static LatLng? gotoTarget;
+  // static LatLng? circleTarget;
+  // static LatLng? objectCoord;
+  static bool isObjectValid = false;
+
+  static final missionTransfer = ValueNotifier(
+    const MissionTransferProgress.idle(),
+  );
 
   static void reset() {
     isMavlinkConnected = false;
@@ -58,4 +71,31 @@ class MavMessages {
   static const int globalPositionInt = 33;
   static const int vfrHud = 74;
   static const int homePosition = 242;
+}
+
+enum MissionTransferType { none, upload, download }
+
+class MissionTransferProgress {
+  final MissionTransferType type;
+  final int current;
+  final int total;
+  final String message;
+  final bool active;
+
+  const MissionTransferProgress({
+    required this.type,
+    required this.current,
+    required this.total,
+    required this.message,
+    required this.active,
+  });
+
+  double get progress => total == 0 ? 0 : current / total;
+
+  const MissionTransferProgress.idle()
+    : type = MissionTransferType.none,
+      current = 0,
+      total = 0,
+      message = "",
+      active = false;
 }

@@ -9,15 +9,24 @@ import '../data/app_data.dart';
 import '../data/mavlink_data.dart';
 import '../models/mav_parameter.dart';
 import '../utils/app_utils.dart';
+import 'mavlink_server_service.dart';
 import 'mission_service.dart';
 import 'notifier_service.dart';
 import '../widgets/snackbar.dart';
 
 class MavlinkService {
-  MavlinkService._internal();
+  // MavlinkService._internal();
 
   factory MavlinkService() => instance;
   static final MavlinkService instance = MavlinkService._internal();
+  MavlinkService._internal() {
+    _initLocalServer();
+  }
+
+  void _initLocalServer() {
+    MavlinkServerService.instance.startServer();
+  }
+
   static RawDatagramSocket? udpSocket;
   late MavlinkParser _parser;
 
@@ -41,7 +50,7 @@ class MavlinkService {
   Future<void> connect({required String host, required int port}) async {
     try {
       debugPrint("Connecting to port $port");
-      udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+      udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 14550);
       udpSocket!.send(Uint8List(0), InternetAddress(host), port);
       debugPrint("Connecting to $host:$port");
       debugPrint("Local Port : ${udpSocket!.port}");
@@ -57,9 +66,6 @@ class MavlinkService {
           if (dg != null) {
             MavlinkData.currentHost = dg.address.address;
             MavlinkData.currentPort = dg.port;
-            // debugPrint(
-            //   "UDP ${dg.data.length} bytes from ${dg.address.address}:${dg.port}",
-            // );
             _parser.parse(dg.data);
           }
         }
@@ -144,12 +150,26 @@ class MavlinkService {
     } else if (message is GlobalPositionInt) {
       MavlinkData.lastGlobalPositionInt = message;
       NotifierService.triggerPositionUpdate();
+      if (MavlinkData.gotoTarget != null) {
+        checkGotoArrival();
+      }
+      final double lat = message.lat / 1e7;
+      final double lon = message.lon / 1e7;
+      // Heading di GlobalPositionInt biasanya dalam centi-degrees (0 - 36000), ubah ke derajat (0 - 360)
+      // Jika heading bernilai 65535 (UINT16_MAX), artinya heading tidak valid/tidak tersedia, bisa di-fallback ke 0 atau ambil dari VfrHud.
+      final double heading = (message.hdg != 65535)
+          ? message.hdg / 100.0
+          : 0.0;
+      MavlinkServerService.instance.broadcastVesselState(lat, lon, heading);
     } else if (message is SysStatus) {
       MavlinkData.lastSysStatus = message;
       NotifierService.triggerStatusUpdate();
     } else if (message is VfrHud) {
       MavlinkData.lastVfrHud = message;
       NotifierService.triggerVfrUpdate();
+    } else if (message is GpsRawInt) {
+      MavlinkData.lastGpsRawInt = message;
+      NotifierService.triggerGpsUpdate();
     } else if (message is HomePosition) {
       MavlinkData.lastHomePosition = message;
       NotifierService.triggerHomeUpdate();
@@ -232,10 +252,18 @@ class MavlinkService {
       MissionService.handleMissionCount(message);
     } else if (message is MissionItemInt) {
       MissionService.handleMissionItem(message);
-    } else if (message is MissionRequestInt) {
-      MissionService.handleMissionRequestInt(message);
+    } else if (message is MissionRequest) {
+      debugPrint("[RX] MissionRequestInt seq=${message.seq}");
+      MissionService.handleMissionRequest(message);
+      // } else if (message is MissionRequest) {
+      //   debugPrint("Dapat miss req");
+      // debugPrint("[RX] MissionRequestInt seq=${message.seq}");
+      // MissionService.handleMissionRequestInt(message);
     } else if (message is MissionAck) {
       MissionService.handleMissionAck(message);
+    } else if (message is MissionCurrent) {
+      MavlinkData.lastMissionCurrent = message;
+      NotifierService.triggerMissionUpdate();
     }
   }
 
@@ -370,6 +398,7 @@ class MavlinkService {
     debugPrint("Disconnecting...");
 
     _stopGcsScheduler();
+    MavlinkServerService.instance.stopServer();
 
     udpSocket?.close();
     udpSocket = null;
@@ -624,8 +653,8 @@ class MavlinkService {
       param2: mission.param2,
       param3: mission.param3,
       param4: mission.param4,
-      x: mission.x.toInt(),
-      y: mission.y.toInt(),
+      x: (mission.x * 1e7).round(),
+      y: (mission.y * 1e7).round(),
       z: mission.z,
       seq: mission.seq,
       command: mission.command,
@@ -636,12 +665,62 @@ class MavlinkService {
       autocontinue: mission.autocontinue,
       missionType: mission.missionType,
     );
+    // debugPrint("[Mission] Sending item ${mission.seq}");
     debugPrint("[Mission] Sending item ${mission.seq}");
+    debugPrint(
+      "[Mission] Sending seq=${mission.seq}, "
+      "cmd=${mission.command}, "
+      "lat=${mission.x}, "
+      "lon=${mission.y}",
+    );
 
     _queueMessage(packet);
   }
 
-  static Future<void> uploadMission() async {
-    final count = MavlinkData.missionItems.length;
+  static void sendGoto({required double latitude, required double longitude}) {
+    final guided = 15;
+
+    if (MavlinkData.lastHeartbeat?.customMode != guided) {
+      setMode(guided);
+    }
+
+    final message = CommandInt(
+      param1: -1,
+      param2: 0,
+      param3: 0,
+      param4: double.nan,
+      x: (latitude * 1e7).round(),
+      y: (longitude * 1e7).round(),
+      z: 0,
+      command: mavCmdDoReposition,
+      targetSystem: MavlinkData.targetSystemId ?? 1,
+      targetComponent: MavlinkData.targetComponentId ?? 1,
+      frame: mavFrameGlobalRelativeAltInt,
+      current: 0,
+      autocontinue: 0,
+    );
+
+    _queueMessage(message);
+  }
+
+  void checkGotoArrival() {
+    final loiter = 5;
+    final circle = 9;
+    final distance = AppUtils.calculateDistance(
+      MavlinkData.lastGlobalPositionInt!.lat / 1e7,
+      MavlinkData.lastGlobalPositionInt!.lon / 1e7,
+      MavlinkData.gotoTarget!.latitude,
+      MavlinkData.gotoTarget!.longitude,
+    );
+
+    if (distance < 7) {
+      MavlinkData.gotoTarget = null;
+
+      if (AppData.gotoAction == GotoMenuAction.circleHere) {
+        MavlinkService.setMode(circle);
+      } else if (AppData.gotoAction == GotoMenuAction.goHere) {
+        MavlinkService.setMode(loiter);
+      }
+    }
   }
 }
