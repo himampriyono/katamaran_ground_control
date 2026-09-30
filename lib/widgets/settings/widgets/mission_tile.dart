@@ -1,4 +1,5 @@
-import 'package:dart_mavlink/dialects/common.dart';
+// import 'package:dart_mavlink/dialects/common.dart';
+import 'package:dart_mavlink/dialects/ardupilotmega.dart';
 import 'package:flutter/material.dart';
 import '../../../utils/mission_extensions.dart';
 

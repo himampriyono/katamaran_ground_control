@@ -1,4 +1,5 @@
-import 'package:dart_mavlink/dialects/common.dart';
+// import 'package:dart_mavlink/dialects/common.dart';
+import 'package:dart_mavlink/dialects/ardupilotmega.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:katamaran_ground_control/utils/mission_extensions.dart';
@@ -125,12 +126,31 @@ class MissionService {
         targetComponent: MavlinkData.targetComponentId ?? 1,
       );
     } else {
-      final mission = MavlinkData.missionItems[packet.seq - 1].copyWith(
-        seq: packet.seq,
+      // Ambil item lama dari list
+      final oldItem = MavlinkData.missionItems[packet.seq - 1];
+
+      // ✅ Ganti MissionItemInt menjadi MissionItem agar cocok dengan oldItem
+      final mission = MissionItem(
+        targetSystem: oldItem.targetSystem,
+        targetComponent: oldItem.targetComponent,
+        seq: packet.seq, // <--- Ini nilai yang di-update
+        frame: oldItem.frame,
+        command: oldItem.command,
+        current: oldItem.current,
+        autocontinue: oldItem.autocontinue,
+        param1: oldItem.param1,
+        param2: oldItem.param2,
+        param3: oldItem.param3,
+        param4: oldItem.param4,
+        x: oldItem.x, // Sekarang float ketemu float, aman!
+        y: oldItem.y,
+        z: oldItem.z,
+        missionType: oldItem.missionType,
       );
 
       MavlinkService.sendMissionitemInt(
-        mission: mission,
+        mission:
+            mission, // Tipe datanya sekarang sudah sama persis seperti sebelum copyWith dihapus
         targetSystem: MavlinkData.targetSystemId ?? 1,
         targetComponent: MavlinkData.targetComponentId ?? 1,
       );

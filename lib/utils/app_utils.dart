@@ -94,14 +94,35 @@ class AppUtils {
     return buffer.toString();
   }
 
-  static List<char> stringToCharList(String text){
+  static List<char> stringToCharList(String text) {
     final bytes = text.codeUnits;
     final result = List<char>.filled(16, 0);
 
-    for (int i = 0; i < bytes.length && i < 16; i++){
+    for (int i = 0; i < bytes.length && i < 16; i++) {
       result[i] = bytes[i];
     }
 
     return result;
+  }
+
+  static double calculateBearing(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    double dLon = (lon2 - lon1) * math.pi / 180.0;
+    double lat1Rad = lat1 * math.pi / 180.0;
+    double lat2Rad = lat2 * math.pi / 180.0;
+
+    double y = math.sin(dLon) * math.cos(lat2Rad);
+    double x =
+        math.cos(lat1Rad) * math.sin(lat2Rad) -
+        math.sin(lat1Rad) * math.cos(lat2Rad) * math.cos(dLon);
+
+    double rad = math.atan2(y, x);
+    double deg = rad * (180.0 / math.pi);
+
+    return (deg + 360) % 360;
   }
 }

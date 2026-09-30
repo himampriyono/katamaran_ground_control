@@ -1,7 +1,8 @@
-import 'package:dart_mavlink/dialects/common.dart';
+// import 'package:dart_mavlink/dialects/common.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/mav_parameter.dart';
+import 'package:dart_mavlink/dialects/ardupilotmega.dart';
 
 class MavlinkData {
   static const int mySystemId = 255;
@@ -46,6 +47,12 @@ class MavlinkData {
   // static LatLng? objectCoord;
   static bool isObjectValid = false;
 
+  static Rpm? rpm;
+  static EfiStatus? efiStatus;
+
+  static double? motor1Rpm;
+  static double? motor2Rpm;
+
   static final missionTransfer = ValueNotifier(
     const MissionTransferProgress.idle(),
   );
@@ -71,6 +78,8 @@ class MavMessages {
   static const int globalPositionInt = 33;
   static const int vfrHud = 74;
   static const int homePosition = 242;
+  static const int rawRpm = 339;
+  static const int efiStatus = 225;
 }
 
 enum MissionTransferType { none, upload, download }

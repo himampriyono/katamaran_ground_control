@@ -1,4 +1,5 @@
-import 'package:dart_mavlink/dialects/common.dart';
+// import 'package:dart_mavlink/dialects/common.dart';
+import 'package:dart_mavlink/dialects/ardupilotmega.dart';
 
 extension MissionItemExtension on MissionItem {
   String get commandName {

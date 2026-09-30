@@ -191,12 +191,8 @@ class _MapAreaState extends State<MapArea> {
                               case MapType.googleMap:
                                 return TileLayer(
                                   urlTemplate:
-                                      "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+                                      "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", // Perhatikan bagian &y={y}&z={z}
                                   subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-                                  additionalOptions: {
-                                    'API_KEY':
-                                        'AIzaSyBQR-OKksBdgps4rrp15DEp-RjTYMYsXOs',
-                                  },
                                   userAgentPackageName: 'com.mygcs.app',
                                   maxNativeZoom: 20,
                                   maxZoom: 22,
@@ -531,9 +527,7 @@ class _MapAreaState extends State<MapArea> {
                   Icons.my_location,
                   color: Colors.orange,
                   size: 24,
-                  shadows: [
-                    Shadow(color: Colors.black, blurRadius: 4)
-                  ],
+                  shadows: [Shadow(color: Colors.black, blurRadius: 4)],
                 ),
               ),
             ],

@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dart_mavlink/mavlink.dart';
-import 'package:dart_mavlink/dialects/common.dart';
+// import 'package:dart_mavlink/dialects/common.dart';
 import 'package:flutter/services.dart';
 import '../data/app_data.dart';
 import '../data/mavlink_data.dart';
@@ -13,6 +13,7 @@ import 'mavlink_server_service.dart';
 import 'mission_service.dart';
 import 'notifier_service.dart';
 import '../widgets/snackbar.dart';
+import 'package:dart_mavlink/dialects/ardupilotmega.dart';
 
 class MavlinkService {
   // MavlinkService._internal();
@@ -59,7 +60,8 @@ class MavlinkService {
       MavlinkData.reset();
       NotifierService.triggerConnectionUpdate();
 
-      _parser = MavlinkParser(MavlinkDialectCommon());
+      // _parser = MavlinkParser(MavlinkDialectCommon());
+      _parser = MavlinkParser(MavlinkDialectArdupilotmega());
       udpSocket?.listen((RawSocketEvent event) {
         if (event == RawSocketEvent.read) {
           Datagram? dg = udpSocket?.receive();
@@ -157,9 +159,7 @@ class MavlinkService {
       final double lon = message.lon / 1e7;
       // Heading di GlobalPositionInt biasanya dalam centi-degrees (0 - 36000), ubah ke derajat (0 - 360)
       // Jika heading bernilai 65535 (UINT16_MAX), artinya heading tidak valid/tidak tersedia, bisa di-fallback ke 0 atau ambil dari VfrHud.
-      final double heading = (message.hdg != 65535)
-          ? message.hdg / 100.0
-          : 0.0;
+      final double heading = (message.hdg != 65535) ? message.hdg / 100.0 : 0.0;
       MavlinkServerService.instance.broadcastVesselState(lat, lon, heading);
     } else if (message is SysStatus) {
       MavlinkData.lastSysStatus = message;
@@ -264,6 +264,11 @@ class MavlinkService {
     } else if (message is MissionCurrent) {
       MavlinkData.lastMissionCurrent = message;
       NotifierService.triggerMissionUpdate();
+    } else if (message is Rpm) {
+      MavlinkData.rpm = message;
+      MavlinkData.motor1Rpm = message.rpm1.toDouble();
+      MavlinkData.motor2Rpm = message.rpm2.toDouble();
+      NotifierService.triggerStatusUpdate();
     }
   }
 
@@ -436,6 +441,8 @@ class MavlinkService {
     setMessageRate(messageId: MavMessages.sysStatus, rateHz: 2);
     setMessageRate(messageId: MavMessages.vfrHud, rateHz: 2);
     setMessageRate(messageId: 375, rateHz: 2);
+    setMessageRate(messageId: 226, rateHz: 2);
+    setMessageRate(messageId: 225, rateHz: 2);
   }
 
   static void sendGcsHeartbeat() {

@@ -1,5 +1,6 @@
 import 'dart:io';
-import 'package:dart_mavlink/dialects/common.dart';
+// import 'package:dart_mavlink/dialects/common.dart';
+import 'package:dart_mavlink/dialects/ardupilotmega.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';

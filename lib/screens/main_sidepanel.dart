@@ -37,7 +37,12 @@ class MainSidePanel extends StatelessWidget {
               _buildBasicDataWidget(),
               const SizedBox(height: 8),
 
-              _buildPanelHeader("TACTICAL"),
+              _buildEngineTelemetryWidget(),
+              const SizedBox(height: 8),
+
+              _buildPanelHeader("TORPEDO SYSTEMS"),
+              const SizedBox(height: 12),
+              _buildTorpedoStatusWidget(),
               const SizedBox(height: 12),
             ],
           ),
@@ -405,7 +410,7 @@ class MainSidePanel extends StatelessWidget {
                   _buildDataItem(
                     title: "BATTERY",
                     value:
-                        "${(MavlinkData.lastSysStatus?.voltageBattery ?? 0) * 0.001}V",
+                        "${((MavlinkData.lastSysStatus?.voltageBattery ?? 0) * 0.001).toStringAsFixed(1)}V",
                   ),
                 ],
               ),
@@ -445,7 +450,7 @@ class MainSidePanel extends StatelessWidget {
                         "${(MavlinkData.lastGpsRawInt?.satellitesVisible) ?? 0}",
                   ),
                   _buildDataItem(
-                    title: "NEXT WP",
+                    title: "NEXT WP DIST",
                     value: ((MavlinkData.lastHeartbeat?.customMode ?? 0) != 10)
                         ? "--"
                         : ((MavlinkData.lastMissionCurrent!.seq <
@@ -490,7 +495,7 @@ class MainSidePanel extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "POSITION",
+                    "CURRENT POSITION",
                     style: const TextStyle(
                       color: Colors.white38,
                       fontSize: 10,
@@ -514,15 +519,23 @@ class MainSidePanel extends StatelessWidget {
                         ValueListenableBuilder(
                           valueListenable: AppData.objectCoord,
                           builder: (context, objPos, _) {
+                            final (
+                              oUtmZone,
+                              oUtmX,
+                              oUtmY,
+                            ) = AppUtils.latLonToUtm(
+                              (AppData.objectCoord.value.latitude),
+                              (AppData.objectCoord.value.longitude),
+                            );
                             return Text(
                               (!MavlinkData.isObjectValid)
                                   ? "--"
                                   : ((AppData.selectedPosUnit.value ==
                                             PositionUnit.utm)
-                                        ? "${utmZone}, ${(utmX).toStringAsFixed(2)}, ${(utmY).toStringAsFixed(2)}"
-                                        : "${(MavlinkData.lastGlobalPositionInt?.lat ?? 0) / 1e7}, ${(MavlinkData.lastGlobalPositionInt?.lon ?? 0) / 1e7}"),
+                                        ? "${oUtmZone}, ${(oUtmX).toStringAsFixed(2)}, ${(oUtmY).toStringAsFixed(2)}"
+                                        : "${(AppData.objectCoord.value.latitude).toStringAsFixed(7)}, ${(AppData.objectCoord.value.longitude).toStringAsFixed(7)}"),
                               style: const TextStyle(
-                                color: Colors.orange,
+                                color: Colors.deepOrange,
                                 fontSize: 14,
                                 // fontWeight: FontWeight.w900,
                                 fontFamily: 'Courier',
@@ -534,12 +547,31 @@ class MainSidePanel extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "TARGET POSITION ESTIMATE",
+                    "OBJECT POSITION ESTIMATE",
                     style: const TextStyle(
                       color: Colors.white38,
                       fontSize: 10,
                       letterSpacing: 2.0,
                     ),
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    spacing: 4,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ValueListenableBuilder<double>(
+                        valueListenable: AppData.headingToTarget,
+                        builder: (context, headingVal, _) {
+                          return _buildDataItem(
+                            title: "HEADING TO OBJECT",
+                            value: MavlinkData.isObjectValid
+                                ? "${headingVal.toStringAsFixed(1)}°"
+                                : "--",
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -624,6 +656,150 @@ class MainSidePanel extends StatelessWidget {
         endIndent: 12,
         color: Colors.white12,
       ),
+    );
+  }
+
+  Widget _buildTorpedoStatusWidget() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildSingleTorpedoIndicator(
+          unitNumber: 1,
+          notifier: AppData.torpedo1Ready,
+        ),
+        const SizedBox(width: 4),
+        _buildSingleTorpedoIndicator(
+          unitNumber: 2,
+          notifier: AppData.torpedo2Ready,
+        ),
+        const SizedBox(width: 4),
+        _buildSingleTorpedoIndicator(
+          unitNumber: 3,
+          notifier: AppData.torpedo3Ready,
+        ),
+        const SizedBox(width: 4),
+        _buildSingleTorpedoIndicator(
+          unitNumber: 4,
+          notifier: AppData.torpedo4Ready,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSingleTorpedoIndicator({
+    required int unitNumber,
+    required ValueNotifier<bool> notifier,
+  }) {
+    return Expanded(
+      child: ValueListenableBuilder<bool>(
+        valueListenable: notifier,
+        builder: (context, isReady, child) {
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+            decoration: BoxDecoration(
+              color: isReady
+                  ? Colors.green.withAlpha(20)
+                  : Colors.red.withAlpha(20),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: isReady ? Colors.green : Colors.red,
+                width: 1.0,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "T-$unitNumber",
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isReady ? "MOUNTED" : "RELEASED",
+                  style: TextStyle(
+                    color: isReady ? Colors.green : Colors.red,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEngineTelemetryWidget() {
+    return ValueListenableBuilder<int>(
+      valueListenable: NotifierService
+          .attitudeTrigger, // Sesuaikan dengan trigger pembaruan data telemetri mesin
+      builder: (context, _, child) {
+        // Ambil data RPM berdasarkan index motor (0 untuk Motor 1, 1 untuk Motor 2)
+        final rpm1Data = MavlinkData.motor1Rpm;
+        final rpm2Data = MavlinkData.motor2Rpm;
+        final efiData = MavlinkData.efiStatus;
+
+        String rpm1Text = rpm1Data != null ? rpm1Data.toStringAsFixed(0) : "--";
+        String rpm2Text = rpm2Data != null ? rpm2Data.toStringAsFixed(0) : "--";
+
+        // Contoh mengambil parameter dari EfiStatus (misal: tegangan injeksi / ignition_voltage)
+        String efiVoltText = efiData != null
+            ? "${efiData.fuelConsumed.toStringAsFixed(1)}V"
+            : "--";
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A20),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: Colors.white.withAlpha(30)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "DUAL MOTORS & EFI STATUS",
+                style: TextStyle(
+                  color: Colors.white38,
+                  fontSize: 9,
+                  letterSpacing: 2.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildDataItem(
+                    title: "RPM 1",
+                    value: rpm1Text,
+                    valueColor: Colors.cyanAccent,
+                    valueSize: 14,
+                  ),
+                  _buildDataItem(
+                    title: "RPM 2",
+                    value: rpm2Text,
+                    valueColor: Colors.cyanAccent,
+                    valueSize: 14,
+                  ),
+                  _buildDataItem(
+                    title: "EFI VOLT",
+                    value: efiVoltText,
+                    valueColor: Colors.amberAccent,
+                    valueSize: 14,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

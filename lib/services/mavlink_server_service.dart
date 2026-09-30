@@ -8,6 +8,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../data/app_data.dart';
 import '../data/mavlink_data.dart';
+import '../utils/app_utils.dart';
 
 class MavlinkServerService {
   static final MavlinkServerService instance = MavlinkServerService._internal();
@@ -86,6 +87,25 @@ class MavlinkServerService {
         }
 
         AppData.objectCoord.value = LatLng(targetLat, targetLon);
+
+        if (isValid) {
+          final pos = MavlinkData.lastGlobalPositionInt;
+          if (pos != null) {
+            double currentLat = pos.lat / 1e7;
+            double currentLon = pos.lon / 1e7;
+
+            double heading = AppUtils.calculateBearing(
+              currentLat,
+              currentLon,
+              targetLat,
+              targetLon,
+            );
+
+            AppData.headingToTarget.value = heading;
+          }
+        } else {
+          AppData.headingToTarget.value = 0.0;
+        }
       }
     } catch (e) {
       debugPrint("⚠️ Gagal parsing pesan klien: $e");
