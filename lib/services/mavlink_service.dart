@@ -269,6 +269,30 @@ class MavlinkService {
       MavlinkData.motor1Rpm = message.rpm1.toDouble();
       MavlinkData.motor2Rpm = message.rpm2.toDouble();
       NotifierService.triggerStatusUpdate();
+    } else if (message is NamedValueInt) {
+      final name = String.fromCharCodes(message.name).replaceAll('\x00', '');
+      if (name == 'TORPEDO') {
+        MavlinkData.torpedoStatus = message;
+        final status = message.value;
+        for (int i = 0; i < 4; i++) {
+          final state = (status >> (i * 2)) & 0x03;
+          switch (state) {
+            case 0:
+              MavlinkData.torpedoStatuses[i] = TorpedoStatus.released;
+              break;
+            case 1:
+              MavlinkData.torpedoStatuses[i] = TorpedoStatus.standby;
+              break;
+            case 2:
+              MavlinkData.torpedoStatuses[i] = TorpedoStatus.ready;
+              break;
+            default:
+              MavlinkData.torpedoStatuses[i] = TorpedoStatus.released;
+              break;
+          }
+        }
+        NotifierService.triggerTorpedoUpdate();
+      }
     }
   }
 

@@ -665,22 +665,22 @@ class MainSidePanel extends StatelessWidget {
       children: [
         _buildSingleTorpedoIndicator(
           unitNumber: 1,
-          notifier: AppData.torpedo1Ready,
+          notifier: NotifierService.torpedoTrigger,
         ),
         const SizedBox(width: 4),
         _buildSingleTorpedoIndicator(
           unitNumber: 2,
-          notifier: AppData.torpedo2Ready,
+          notifier: NotifierService.torpedoTrigger,
         ),
         const SizedBox(width: 4),
         _buildSingleTorpedoIndicator(
           unitNumber: 3,
-          notifier: AppData.torpedo3Ready,
+          notifier: NotifierService.torpedoTrigger,
         ),
         const SizedBox(width: 4),
         _buildSingleTorpedoIndicator(
           unitNumber: 4,
-          notifier: AppData.torpedo4Ready,
+          notifier: NotifierService.torpedoTrigger,
         ),
       ],
     );
@@ -688,21 +688,40 @@ class MainSidePanel extends StatelessWidget {
 
   Widget _buildSingleTorpedoIndicator({
     required int unitNumber,
-    required ValueNotifier<bool> notifier,
+    required ValueNotifier<int> notifier,
   }) {
     return Expanded(
-      child: ValueListenableBuilder<bool>(
+      child: ValueListenableBuilder<int>(
         valueListenable: notifier,
         builder: (context, isReady, child) {
+          final torpedoStatus = MavlinkData.torpedoStatuses[unitNumber - 1];
+          late String statusText;
+          late Color statusColor;
+
+          switch (torpedoStatus) {
+            case TorpedoStatus.ready:
+              statusText = "READY";
+              statusColor = Colors.green;
+              break;
+
+            case TorpedoStatus.standby:
+              statusText = "STANDBY";
+              statusColor = Colors.orange;
+              break;
+
+            case TorpedoStatus.released:
+              statusText = "RELEASED";
+              statusColor = Colors.red;
+              break;
+          }
+
           return Container(
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
             decoration: BoxDecoration(
-              color: isReady
-                  ? Colors.green.withAlpha(20)
-                  : Colors.red.withAlpha(20),
+              color: statusColor.withAlpha(20),
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                color: isReady ? Colors.green : Colors.red,
+                color: statusColor,
                 width: 1.0,
               ),
             ),
@@ -719,9 +738,9 @@ class MainSidePanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  isReady ? "MOUNTED" : "RELEASED",
+                  statusText,
                   style: TextStyle(
-                    color: isReady ? Colors.green : Colors.red,
+                    color: statusColor,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
                   ),

@@ -52,9 +52,4 @@ class AppData {
   static GotoMenuAction gotoAction = GotoMenuAction.none;
 
   static final ValueNotifier<double> headingToTarget = ValueNotifier(0.0);
-
-  static ValueNotifier<bool> torpedo1Ready = ValueNotifier(false);
-  static ValueNotifier<bool> torpedo2Ready = ValueNotifier(false);
-  static ValueNotifier<bool> torpedo3Ready = ValueNotifier(false);
-  static ValueNotifier<bool> torpedo4Ready = ValueNotifier(false);
 }

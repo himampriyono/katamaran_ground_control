@@ -4,6 +4,8 @@ import 'package:latlong2/latlong.dart';
 import '../models/mav_parameter.dart';
 import 'package:dart_mavlink/dialects/ardupilotmega.dart';
 
+enum TorpedoStatus { standby, ready, released }
+
 class MavlinkData {
   static const int mySystemId = 255;
   static const int myComponentId = mavTypeGcs;
@@ -31,6 +33,11 @@ class MavlinkData {
   static List<int> rcChannels = List.filled(16, 1500);
   static List<int> pwmOutput = List.filled(16, 950);
   static MissionCurrent? lastMissionCurrent;
+  static NamedValueInt? torpedoStatus;
+  static List<TorpedoStatus> torpedoStatuses = List.filled(
+    4,
+    TorpedoStatus.released,
+  );
 
   static final Map<String, MavParameter> parameters = {};
   static int parameterCount = 0;
