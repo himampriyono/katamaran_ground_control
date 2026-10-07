@@ -64,6 +64,8 @@ class MavlinkData {
     const MissionTransferProgress.idle(),
   );
 
+  static final TorpedoMissionData torpedo = TorpedoMissionData();
+
   static void reset() {
     isMavlinkConnected = false;
     lastPacketReceivedTime = null;
@@ -114,4 +116,20 @@ class MissionTransferProgress {
       total = 0,
       message = "",
       active = false;
+}
+
+class TorpedoMissionData {
+  double heading;
+  double depth;
+  double power;
+  double startDelay;
+  double duration;
+
+  TorpedoMissionData({
+    this.heading = 0,
+    this.depth = 0,
+    this.power = 0,
+    this.startDelay = 0,
+    this.duration = -1,
+  });
 }

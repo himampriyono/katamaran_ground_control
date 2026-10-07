@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'dart:math' as math;
 import '../services/notifier_service.dart';
 import '../data/app_data.dart';
 import '../services/mavlink_service.dart';
 import '../data/mavlink_data.dart';
 import '../utils/app_utils.dart';
+import 'torpedo_window.dart';
 
 class MainSidePanel extends StatelessWidget {
   const MainSidePanel({super.key});
@@ -42,7 +44,7 @@ class MainSidePanel extends StatelessWidget {
 
               _buildPanelHeader("TORPEDO SYSTEMS"),
               const SizedBox(height: 12),
-              _buildTorpedoStatusWidget(),
+              _buildTorpedoStatusWidget(context),
               const SizedBox(height: 12),
             ],
           ),
@@ -659,28 +661,82 @@ class MainSidePanel extends StatelessWidget {
     );
   }
 
-  Widget _buildTorpedoStatusWidget() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  // Widget _buildTorpedoStatusWidget() {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //     children: [
+  //       _buildSingleTorpedoIndicator(
+  //         unitNumber: 1,
+  //         notifier: NotifierService.torpedoTrigger,
+  //       ),
+  //       const SizedBox(width: 4),
+  //       _buildSingleTorpedoIndicator(
+  //         unitNumber: 2,
+  //         notifier: NotifierService.torpedoTrigger,
+  //       ),
+  //       const SizedBox(width: 4),
+  //       _buildSingleTorpedoIndicator(
+  //         unitNumber: 3,
+  //         notifier: NotifierService.torpedoTrigger,
+  //       ),
+  //       const SizedBox(width: 4),
+  //       _buildSingleTorpedoIndicator(
+  //         unitNumber: 4,
+  //         notifier: NotifierService.torpedoTrigger,
+  //       ),
+  //     ],
+  //   );
+  // }
+
+  Widget _buildTorpedoStatusWidget(BuildContext context) {
+    return Column(
       children: [
-        _buildSingleTorpedoIndicator(
-          unitNumber: 1,
-          notifier: NotifierService.torpedoTrigger,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildSingleTorpedoIndicator(
+              unitNumber: 1,
+              notifier: NotifierService.torpedoTrigger,
+            ),
+            const SizedBox(width: 4),
+            _buildSingleTorpedoIndicator(
+              unitNumber: 2,
+              notifier: NotifierService.torpedoTrigger,
+            ),
+            const SizedBox(width: 4),
+            _buildSingleTorpedoIndicator(
+              unitNumber: 3,
+              notifier: NotifierService.torpedoTrigger,
+            ),
+            const SizedBox(width: 4),
+            _buildSingleTorpedoIndicator(
+              unitNumber: 4,
+              notifier: NotifierService.torpedoTrigger,
+            ),
+          ],
         ),
-        const SizedBox(width: 4),
-        _buildSingleTorpedoIndicator(
-          unitNumber: 2,
-          notifier: NotifierService.torpedoTrigger,
-        ),
-        const SizedBox(width: 4),
-        _buildSingleTorpedoIndicator(
-          unitNumber: 3,
-          notifier: NotifierService.torpedoTrigger,
-        ),
-        const SizedBox(width: 4),
-        _buildSingleTorpedoIndicator(
-          unitNumber: 4,
-          notifier: NotifierService.torpedoTrigger,
+
+        const SizedBox(height: 10),
+
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const TorpedoWindow(),
+              );
+            },
+            icon: const Icon(Icons.settings, size: 16),
+            label: const Text(
+              "MISSION SETTINGS",
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -710,7 +766,7 @@ class MainSidePanel extends StatelessWidget {
               break;
 
             case TorpedoStatus.released:
-              statusText = "RELEASED";
+              statusText = "UNMOUNT";
               statusColor = Colors.red;
               break;
           }
@@ -720,10 +776,7 @@ class MainSidePanel extends StatelessWidget {
             decoration: BoxDecoration(
               color: statusColor.withAlpha(20),
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: statusColor,
-                width: 1.0,
-              ),
+              border: Border.all(color: statusColor, width: 1.0),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

@@ -7,7 +7,7 @@ import 'services/parameter_metadata_service.dart';
 import 'widgets/snackbar.dart';
 import 'utils/joystick.dart';
 import 'services/settings_service.dart';
-import 'debug/mbtiles_test_page.dart';
+// import 'debug/mbtiles_test_page.dart';
 
 final mavlinkService = MavlinkService();
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:dart_mavlink/mavlink.dart';
 // import 'package:dart_mavlink/dialects/common.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart';
 import '../data/app_data.dart';
 import '../data/mavlink_data.dart';
 import '../models/mav_parameter.dart';
@@ -43,6 +44,13 @@ class MavlinkService {
   static final Queue<MavlinkFrame> sendQueue = Queue<MavlinkFrame>();
 
   bool _lastConnectionSat = false;
+  int? _lastTorpedoStatusValue;
+
+  static const int cmdTorpedoMission = 31010;
+  static const int cmdTorpedoLaunch = 31011;
+  static const int cmdTorpedoReset = 31012;
+  static final List<bool> _torpedoSwitchState = List.filled(4, false);
+  static bool _torpedoSwitchInitialized = false;
 
   static Completer<bool>? _parameterWriteCompleter;
   static String? _waitingParameterName;
@@ -158,7 +166,6 @@ class MavlinkService {
       final double lat = message.lat / 1e7;
       final double lon = message.lon / 1e7;
       // Heading di GlobalPositionInt biasanya dalam centi-degrees (0 - 36000), ubah ke derajat (0 - 360)
-      // Jika heading bernilai 65535 (UINT16_MAX), artinya heading tidak valid/tidak tersedia, bisa di-fallback ke 0 atau ambil dari VfrHud.
       final double heading = (message.hdg != 65535) ? message.hdg / 100.0 : 0.0;
       MavlinkServerService.instance.broadcastVesselState(lat, lon, heading);
     } else if (message is SysStatus) {
@@ -218,7 +225,7 @@ class MavlinkService {
       MavlinkData.pwmOutput[15] = message.servo16Raw;
       NotifierService.triggerPwmUpdate();
     } else if (message is ActuatorOutputStatus) {
-      debugPrint(message.toString());
+      debugPrint("got data actuator");
     } else if (message is ParamValue) {
       final name = AppUtils.charListToString(message.paramId);
 
@@ -255,10 +262,6 @@ class MavlinkService {
     } else if (message is MissionRequest) {
       debugPrint("[RX] MissionRequestInt seq=${message.seq}");
       MissionService.handleMissionRequest(message);
-      // } else if (message is MissionRequest) {
-      //   debugPrint("Dapat miss req");
-      // debugPrint("[RX] MissionRequestInt seq=${message.seq}");
-      // MissionService.handleMissionRequestInt(message);
     } else if (message is MissionAck) {
       MissionService.handleMissionAck(message);
     } else if (message is MissionCurrent) {
@@ -270,29 +273,7 @@ class MavlinkService {
       MavlinkData.motor2Rpm = message.rpm2.toDouble();
       NotifierService.triggerStatusUpdate();
     } else if (message is NamedValueInt) {
-      final name = String.fromCharCodes(message.name).replaceAll('\x00', '');
-      if (name == 'TORPEDO') {
-        MavlinkData.torpedoStatus = message;
-        final status = message.value;
-        for (int i = 0; i < 4; i++) {
-          final state = (status >> (i * 2)) & 0x03;
-          switch (state) {
-            case 0:
-              MavlinkData.torpedoStatuses[i] = TorpedoStatus.released;
-              break;
-            case 1:
-              MavlinkData.torpedoStatuses[i] = TorpedoStatus.standby;
-              break;
-            case 2:
-              MavlinkData.torpedoStatuses[i] = TorpedoStatus.ready;
-              break;
-            default:
-              MavlinkData.torpedoStatuses[i] = TorpedoStatus.released;
-              break;
-          }
-        }
-        NotifierService.triggerTorpedoUpdate();
-      }
+      _handleNamedValueInt(message);
     }
   }
 
@@ -394,6 +375,7 @@ class MavlinkService {
 
       if (AppData.joystickStatus.value == JoystickStatus.connected) {
         sendRcOverride();
+        _checkTorpedoSwitches();
       }
 
       if (_schedulerTicks % 4 == 0) {
@@ -752,6 +734,167 @@ class MavlinkService {
       } else if (AppData.gotoAction == GotoMenuAction.goHere) {
         MavlinkService.setMode(loiter);
       }
+    }
+  }
+
+  void _handleNamedValueInt(NamedValueInt message) {
+    const torpedoName = [
+      84,
+      79,
+      82,
+      80,
+      69,
+      68,
+      79,
+    ]; // translate TORPEDO ke ASCII *ndak lali
+
+    if (message.name.length < torpedoName.length) {
+      return;
+    }
+
+    for (int i = 0; i < torpedoName.length; i++) {
+      if ((message.name[i] & 0xFF) != torpedoName[i]) {
+        return;
+      }
+    }
+
+    final status = message.value;
+
+    if (_lastTorpedoStatusValue == status) return;
+
+    _lastTorpedoStatusValue = status;
+    MavlinkData.torpedoStatus = message;
+
+    bool changed = false;
+
+    for (int i = 0; i < 4; i++) {
+      final state = (status >> (i * 2)) & 0x03;
+
+      final TorpedoStatus newStatus;
+
+      switch (state) {
+        case 0:
+          newStatus = TorpedoStatus.released;
+          break;
+
+        case 1:
+          newStatus = TorpedoStatus.standby;
+          break;
+
+        case 2:
+          newStatus = TorpedoStatus.ready;
+          break;
+
+        default:
+          newStatus = TorpedoStatus.released;
+          break;
+      }
+
+      if (MavlinkData.torpedoStatuses[i] != newStatus) {
+        MavlinkData.torpedoStatuses[i] = newStatus;
+        changed = true;
+      }
+    }
+
+    if (changed) NotifierService.triggerTorpedoUpdate();
+  }
+
+  static void sendTorpedoMission({
+    required int torpedoId,
+    required double heading,
+    required double depth,
+    required double power,
+  }) {
+    debugPrint(
+      "[TORPEDO] Mission "
+      "T=$torpedoId "
+      "Heading=$heading "
+      "Depth=$depth "
+      "Power=$power",
+    );
+
+    sendCommandLong(
+      command: cmdTorpedoMission,
+      param1: torpedoId.toDouble(),
+      param2: heading,
+      param3: depth,
+      param4: power,
+    );
+  }
+
+  static void sendTorpedoLaunch({
+    required int torpedoId,
+    double startDelay = 0,
+    double duration = -1,
+  }) {
+    debugPrint(
+      "[TORPEDO] Launch "
+      "T=$torpedoId "
+      "DelayStart=$startDelay "
+      "Duration=$duration ",
+    );
+
+    sendCommandLong(
+      command: cmdTorpedoLaunch,
+      param1: torpedoId.toDouble(),
+      param2: startDelay,
+      param3: duration,
+    );
+  }
+
+  static void sendTorpedoReset({required int torpedoId}) {
+    debugPrint("[TORPEDO] Reset T=$torpedoId");
+
+    sendCommandLong(command: cmdTorpedoReset, param1: torpedoId.toDouble());
+  }
+
+  static void _checkTorpedoSwitches() {
+    if (AppData.joystickStatus.value != JoystickStatus.connected) return;
+
+    final channels = AppData.joystickChannels.value;
+    const switchChannels = [6, 7, 8, 9];
+
+    const int onThreshold = 1800;
+
+    if (!_torpedoSwitchInitialized) {
+      for (int i = 0; i < 4; i++) {
+        _torpedoSwitchState[i] = channels[switchChannels[i]] >= onThreshold;
+      }
+
+      _torpedoSwitchInitialized = true;
+      return;
+    }
+
+    for (int i = 0; i < 4; i++) {
+      final bool currentState = channels[switchChannels[i]] >= onThreshold;
+
+      final bool previousState = _torpedoSwitchState[i];
+
+      if (!previousState && currentState) {
+        final torpedoId = i + 1;
+
+        debugPrint(
+          "[TORPEDO] Switch CH${switchChannels[i] + 1} "
+          "triggered T$torpedoId",
+        );
+
+        final mission = MavlinkData.torpedo;
+
+        sendTorpedoMission(
+          torpedoId: torpedoId,
+          heading: mission.heading,
+          depth: mission.depth,
+          power: mission.power,
+        );
+
+        sendTorpedoLaunch(
+          torpedoId: torpedoId,
+          startDelay: mission.startDelay,
+          duration: mission.duration,
+        );
+      }
+
+      _torpedoSwitchState[i] = currentState;
     }
   }
 }
