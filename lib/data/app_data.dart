@@ -52,4 +52,22 @@ class AppData {
   static GotoMenuAction gotoAction = GotoMenuAction.none;
 
   static final ValueNotifier<double> headingToTarget = ValueNotifier(0.0);
+
+  static final ValueNotifier<JetsonTelemetry> jetsonTelemetry = ValueNotifier(
+    const JetsonTelemetry(),
+  );
+}
+
+class JetsonTelemetry {
+  final bool connected;
+  final double cpuTemp;
+  final double gpuTemp;
+  final double junctionTemp;
+
+  const JetsonTelemetry({
+    this.connected = false,
+    this.cpuTemp = 0,
+    this.gpuTemp = 0,
+    this.junctionTemp = 0,
+  });
 }

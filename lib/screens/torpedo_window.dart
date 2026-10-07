@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import '../services/mavlink_service.dart';
+import '../utils/joystick.dart';
 import '../data/mavlink_data.dart';
 
 class TorpedoWindow extends StatefulWidget {
@@ -224,6 +225,28 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
                     ),
                   ),
                 ],
+              ),
+
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    for (int torpedoId = 21; torpedoId <= 24; torpedoId++) {
+                      MavlinkService.sendTorpedoReset(torpedoId: torpedoId);
+                    }
+                  },
+                  icon: const Icon(Icons.restart_alt, size: 16),
+                  label: const Text(
+                    "RESET TORPEDO STATE",
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),

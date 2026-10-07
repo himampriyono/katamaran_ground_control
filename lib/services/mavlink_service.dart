@@ -10,6 +10,7 @@ import '../data/app_data.dart';
 import '../data/mavlink_data.dart';
 import '../models/mav_parameter.dart';
 import '../utils/app_utils.dart';
+import '../utils/joystick.dart';
 import 'mavlink_server_service.dart';
 import 'mission_service.dart';
 import 'notifier_service.dart';
@@ -761,6 +762,16 @@ class MavlinkService {
 
     final status = message.value;
 
+    final ledStates = <bool>[];
+
+    for (int i = 0; i < 4; i++) {
+      final state = (status >> (i * 2)) & 0x03;
+
+      ledStates.add(state == 1 || state == 2);
+    }
+
+    Joystick.sendTorpedoLedStatus(states: ledStates);
+
     if (_lastTorpedoStatusValue == status) return;
 
     _lastTorpedoStatusValue = status;
@@ -876,7 +887,10 @@ class MavlinkService {
   static void sendTorpedoReset({required int torpedoId}) {
     debugPrint("[TORPEDO] Reset T=$torpedoId");
 
-    sendCommandLongTorpedo(command: cmdTorpedoReset, param1: torpedoId.toDouble());
+    sendCommandLongTorpedo(
+      command: cmdTorpedoReset,
+      param1: torpedoId.toDouble(),
+    );
   }
 
   static void _checkTorpedoSwitches() {
@@ -902,7 +916,7 @@ class MavlinkService {
       final bool previousState = _torpedoSwitchState[i];
 
       if (!previousState && currentState) {
-        final torpedoId = i + 1;
+        final torpedoId = i + 21;
 
         debugPrint(
           "[TORPEDO] Switch CH${switchChannels[i] + 1} "

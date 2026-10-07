@@ -360,4 +360,63 @@ class Joystick {
   static bool stopCalibration() {
     return sendCommand("842");
   }
+
+  static bool sendLedFeedback({required int ledByte, required int driverByte}) {
+    if (_port == null || !_port!.isOpen) {
+      return false;
+    }
+
+    final data = Uint8List.fromList([
+      0x53, // 'S'
+      0x54, // 'T'
+      ledByte & 0xFF,
+      driverByte & 0xFF,
+    ]);
+
+    final result = _port!.write(data);
+
+    // debugPrint(
+    //   "[LED] "
+    //   "LED=0x${(ledByte & 0xFF).toRadixString(16).padLeft(2, '0').toUpperCase()} "
+    //   "DRIVER=0x${(driverByte & 0xFF).toRadixString(16).padLeft(2, '0').toUpperCase()}",
+    // );
+
+    return result == data.length;
+  }
+
+  static bool sendTorpedoLedStatus({required List<bool> states}) {
+    if (states.length != 4) {
+      debugPrint("[LED] Invalid torpedo state count");
+      return false;
+    }
+
+    int ledByte = 0;
+    int driverByte = 0;
+
+    // T21 / LED 1
+    if (states[0]) {
+      ledByte |= 0x01;
+      driverByte |= 0x10;
+    }
+
+    // T22 / LED 2
+    if (states[1]) {
+      ledByte |= 0x02;
+      driverByte |= 0x20;
+    }
+
+    // T23 / LED 3
+    if (states[2]) {
+      ledByte |= 0x04;
+      driverByte |= 0x40;
+    }
+
+    // T24 / LED 4
+    if (states[3]) {
+      ledByte |= 0x20;
+      driverByte |= 0x80;
+    }
+
+    return sendLedFeedback(ledByte: ledByte, driverByte: driverByte);
+  }
 }

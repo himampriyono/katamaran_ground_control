@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 import 'data/app_data.dart';
 import 'screens/main_dashboard.dart';
+import 'services/jetson_monitor_service.dart';
 import 'services/mavlink_service.dart';
 import 'services/parameter_metadata_service.dart';
 import 'widgets/snackbar.dart';
@@ -18,7 +19,7 @@ Future<void> main(List<String> args) async {
   const options = WindowOptions(
     // fullScreen: true,
     center: true,
-    title: ""
+    title: "",
   );
   windowManager.waitUntilReadyToShow(options, () async {
     await windowManager.show();
@@ -40,6 +41,8 @@ Future<void> _initializeServices() async {
     host: SettingsService.vesselIp,
     port: SettingsService.udpPort,
   );
+
+  JetsonMonitorService.connect(SettingsService.vesselIp);
 
   Joystick.startRecoverJoystick();
   await ParameterMetadataService.load();
