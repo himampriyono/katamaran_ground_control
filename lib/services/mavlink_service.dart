@@ -46,6 +46,7 @@ class MavlinkService {
   bool _lastConnectionSat = false;
   int? _lastTorpedoStatusValue;
 
+  static const int torpedoTargetComponentId = 191;
   static const int cmdTorpedoMission = 31010;
   static const int cmdTorpedoLaunch = 31011;
   static const int cmdTorpedoReset = 31012;
@@ -799,6 +800,36 @@ class MavlinkService {
     if (changed) NotifierService.triggerTorpedoUpdate();
   }
 
+  static void sendCommandLongTorpedo({
+    required int command,
+    double param1 = 0,
+    double param2 = 0,
+    double param3 = 0,
+    double param4 = 0,
+    double param5 = 0,
+    double param6 = 0,
+    double param7 = 0,
+    int confirmation = 0,
+  }) {
+    final targetSys = MavlinkData.targetSystemId ?? 1;
+
+    final msg = CommandLong(
+      param1: param1,
+      param2: param2,
+      param3: param3,
+      param4: param4,
+      param5: param5,
+      param6: param6,
+      param7: param7,
+      command: command,
+      targetSystem: targetSys,
+      targetComponent: torpedoTargetComponentId,
+      confirmation: confirmation,
+    );
+
+    _queueMessage(msg);
+  }
+
   static void sendTorpedoMission({
     required int torpedoId,
     required double heading,
@@ -813,7 +844,7 @@ class MavlinkService {
       "Power=$power",
     );
 
-    sendCommandLong(
+    sendCommandLongTorpedo(
       command: cmdTorpedoMission,
       param1: torpedoId.toDouble(),
       param2: heading,
@@ -834,7 +865,7 @@ class MavlinkService {
       "Duration=$duration ",
     );
 
-    sendCommandLong(
+    sendCommandLongTorpedo(
       command: cmdTorpedoLaunch,
       param1: torpedoId.toDouble(),
       param2: startDelay,
@@ -845,7 +876,7 @@ class MavlinkService {
   static void sendTorpedoReset({required int torpedoId}) {
     debugPrint("[TORPEDO] Reset T=$torpedoId");
 
-    sendCommandLong(command: cmdTorpedoReset, param1: torpedoId.toDouble());
+    sendCommandLongTorpedo(command: cmdTorpedoReset, param1: torpedoId.toDouble());
   }
 
   static void _checkTorpedoSwitches() {
