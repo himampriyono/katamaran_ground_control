@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_libserialport/flutter_libserialport.dart';
 import '../data/app_data.dart';
 import '../widgets/snackbar.dart';
+import '../services/settings_service.dart';
 
 class Joystick {
   Joystick._();
@@ -100,6 +101,10 @@ class Joystick {
 
           if (!valid) {
             continue;
+          }
+
+          for (int i = 0; i < channels.length; i++) {
+            channels[i] = _applyChannelReverse(i + 1, channels[i]);
           }
 
           final calibrationState = packet[3 + channelBytes];
@@ -359,6 +364,14 @@ class Joystick {
 
   static bool stopCalibration() {
     return sendCommand("842");
+  }
+
+  static int _applyChannelReverse(int channel, int value) {
+    if (!SettingsService.isJoystickChannelReversed(channel)) {
+      return value;
+    }
+
+    return (3000 - value).clamp(1000, 2000);
   }
 
   static bool sendLedFeedback({required int ledByte, required int driverByte}) {

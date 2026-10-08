@@ -53,6 +53,7 @@ class MavlinkService {
   static const int cmdTorpedoReset = 31012;
   static final List<bool> _torpedoSwitchState = List.filled(4, false);
   static bool _torpedoSwitchInitialized = false;
+  static final Map<int, _PendingTorpedoLaunch> _pendingTorpedoLaunches = {};
 
   static Completer<bool>? _parameterWriteCompleter;
   static String? _waitingParameterName;
@@ -140,6 +141,10 @@ class MavlinkService {
     // debugPrint("MSG ${message.runtimeType} (${message.mavlinkMessageId})");
 
     if (message is Heartbeat) {
+      if (frame.componentId != mavCompIdAutopilot1) {
+        return;
+      }
+
       if (message.customMode != MavlinkData.lastHeartbeat?.customMode) {
         NotifierService.triggerConnectionUpdate();
       }
@@ -276,6 +281,12 @@ class MavlinkService {
       NotifierService.triggerStatusUpdate();
     } else if (message is NamedValueInt) {
       _handleNamedValueInt(message);
+    } else if (message is NamedValueFloat) {
+      _handleNamedValueFloat(message);
+    } else if (message is McuStatus) {
+      MavlinkData.lastMcuStatus = message;
+      NotifierService.triggerStatusUpdate();
+      // debugPrint("${message.mcuTemperature / 100}");
     }
   }
 
@@ -451,6 +462,7 @@ class MavlinkService {
     setMessageRate(messageId: 375, rateHz: 2);
     setMessageRate(messageId: 226, rateHz: 2);
     setMessageRate(messageId: 225, rateHz: 2);
+    setMessageRate(messageId: 11039, rateHz: 1);
   }
 
   static void sendGcsHeartbeat() {
@@ -802,6 +814,8 @@ class MavlinkService {
           break;
       }
 
+      _checkPendingtorpedoLaunches(MavlinkData.torpedoStatuses);
+
       if (MavlinkData.torpedoStatuses[i] != newStatus) {
         MavlinkData.torpedoStatuses[i] = newStatus;
         changed = true;
@@ -809,6 +823,29 @@ class MavlinkService {
     }
 
     if (changed) NotifierService.triggerTorpedoUpdate();
+  }
+
+  void _handleNamedValueFloat(NamedValueFloat message) {
+    final nameBytes = message.name;
+
+    final name = String.fromCharCodes(nameBytes.takeWhile((byte) => byte != 0));
+
+    if (name != 'T21' && name != 'T22' && name != 'T23' && name != 'T24') {
+      return;
+    }
+    final torpedoId = int.parse(name.substring(1));
+    final voltage = message.value;
+
+    final current = MavlinkData.torpedoVoltage.value;
+
+    final values = Map<int, double>.from(current.values);
+    values[torpedoId] = voltage;
+    MavlinkData.torpedoVoltage.value = TorpedoVoltage(values: values);
+
+    // debugPrint(
+    //   '[TORPEDO] Voltage T$torpedoId = '
+    //   '${voltage.toStringAsFixed(2)} V',
+    // );
   }
 
   static void sendCommandLongTorpedo({
@@ -925,14 +962,29 @@ class MavlinkService {
 
         final mission = MavlinkData.torpedo;
 
+        final double missionHeading;
+
+        if (mission.autoTargetHeading) {
+          if (!MavlinkData.isObjectValid) {
+            Snackbar.show("Torpedo target is not valid.", isWarning: true);
+
+            _torpedoSwitchState[i] = currentState;
+            continue;
+          }
+
+          missionHeading = AppData.headingToTarget.value;
+        } else {
+          missionHeading = mission.heading;
+        }
+
         sendTorpedoMission(
           torpedoId: torpedoId,
-          heading: mission.heading,
+          heading: missionHeading,
           depth: mission.depth,
           power: mission.power,
         );
 
-        sendTorpedoLaunch(
+        sendTorpedoLaunchWhenReady(
           torpedoId: torpedoId,
           startDelay: mission.startDelay,
           duration: mission.duration,
@@ -942,4 +994,69 @@ class MavlinkService {
       _torpedoSwitchState[i] = currentState;
     }
   }
+
+  static void sendTorpedoLaunchWhenReady({
+    required int torpedoId,
+    double startDelay = 0,
+    double duration = -1,
+  }) {
+    final index = torpedoId - 21;
+
+    if (index < 0 || index > 4) return;
+
+    final currentStatus = MavlinkData.torpedoStatuses[index];
+
+    if (currentStatus == TorpedoStatus.ready) {
+      sendTorpedoLaunch(
+        torpedoId: torpedoId,
+        startDelay: startDelay,
+        duration: duration,
+      );
+      return;
+    }
+
+    _pendingTorpedoLaunches[torpedoId] = _PendingTorpedoLaunch(
+      torpedoId: torpedoId,
+      startDelay: startDelay,
+      duration: duration,
+    );
+  }
+
+  static void _checkPendingtorpedoLaunches(List<TorpedoStatus> statuses) {
+    if (_pendingTorpedoLaunches.isEmpty) return;
+
+    final pendingIds = List<int>.from(_pendingTorpedoLaunches.keys);
+
+    for (final torpedoId in pendingIds) {
+      final index = torpedoId - 21;
+
+      if (index < 0 || index >= statuses.length) continue;
+
+      if (statuses[index] != TorpedoStatus.ready) continue;
+
+      final pending = _pendingTorpedoLaunches[torpedoId];
+
+      if (pending == null) continue;
+
+      sendTorpedoLaunch(
+        torpedoId: pending.torpedoId,
+        startDelay: pending.startDelay,
+        duration: pending.duration,
+      );
+
+      _pendingTorpedoLaunches.remove(torpedoId);
+    }
+  }
+}
+
+class _PendingTorpedoLaunch {
+  final int torpedoId;
+  final double startDelay;
+  final double duration;
+
+  const _PendingTorpedoLaunch({
+    required this.torpedoId,
+    required this.startDelay,
+    required this.duration,
+  });
 }

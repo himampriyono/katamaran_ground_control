@@ -8,6 +8,8 @@ import '../widgets/action_button.dart';
 import '../widgets/joystick_port_selector.dart';
 import '../windows/joystick_calibration.dart';
 import '../windows/joystick_monitor_window.dart';
+import '../../../services/settings_service.dart';
+import '../windows/joystick_reverse_window.dart';
 
 class JoystickPage extends StatelessWidget {
   const JoystickPage({super.key});
@@ -16,14 +18,15 @@ class JoystickPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
+        // crossAxisAlignment: CrossAxisAlignment.start,
+        padding: EdgeInsets.zero,
         children: [
           const SettingPageHeader(
             title: "Joystick",
             subtitle: "Configure Joystick connection settings.",
           ),
-          const SizedBox(height: 4),
+          // const SizedBox(height: 4),
           SettingsGroup(
             title: "Connection",
             child: Column(
@@ -151,7 +154,7 @@ class JoystickPage extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(),
+          // const Divider(),
           SettingsGroup(
             title: "Tools",
             child: Column(
@@ -185,6 +188,22 @@ class JoystickPage extends StatelessWidget {
                         barrierDismissible: true,
                         builder: (_) {
                           return const JoystickCalibration();
+                        },
+                      );
+                    },
+                  ),
+                ),
+                SettingsTile(
+                  title: "Channel Reverse",
+                  trailing: ActionButton(
+                    text: "Configure",
+                    color: Colors.cyan,
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (_) {
+                          return const JoystickReverseWindow();
                         },
                       );
                     },

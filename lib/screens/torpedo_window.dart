@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../widgets/settings/widgets/action_button.dart';
+import '../../data/mavlink_data.dart';
 import '../services/mavlink_service.dart';
-import '../utils/joystick.dart';
-import '../data/mavlink_data.dart';
+import '../services/settings_service.dart';
 
 class TorpedoWindow extends StatefulWidget {
   const TorpedoWindow({super.key});
@@ -13,9 +15,11 @@ class TorpedoWindow extends StatefulWidget {
 class _TorpedoWindowState extends State<TorpedoWindow> {
   late final TextEditingController _headingController;
   late final TextEditingController _depthController;
-  late final TextEditingController _powerController;
+  late final TextEditingController _rpmController;
   late final TextEditingController _startDelayController;
   late final TextEditingController _durationController;
+
+  late bool _autoTargetHeading;
 
   @override
   void initState() {
@@ -23,234 +27,246 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
 
     final mission = MavlinkData.torpedo;
 
+    _autoTargetHeading = mission.autoTargetHeading;
+
     _headingController = TextEditingController(
-      text: _formatNumber(mission.heading),
+      text: mission.heading.toString(),
     );
 
-    _depthController = TextEditingController(
-      text: _formatNumber(mission.depth),
-    );
+    _depthController = TextEditingController(text: mission.depth.toString());
 
-    _powerController = TextEditingController(
-      text: _formatNumber(mission.power),
+    _rpmController = TextEditingController(
+      text: mission.power.toStringAsFixed(0),
     );
 
     _startDelayController = TextEditingController(
-      text: _formatNumber(mission.startDelay),
+      text: mission.startDelay.toString(),
     );
 
     _durationController = TextEditingController(
-      text: _formatNumber(mission.duration),
+      text: mission.duration.toString(),
     );
-  }
-
-  String _formatNumber(double value) {
-    if (value == value.roundToDouble()) {
-      return value.toInt().toString();
-    }
-
-    return value.toString();
   }
 
   @override
   void dispose() {
     _headingController.dispose();
     _depthController.dispose();
-    _powerController.dispose();
+    _rpmController.dispose();
     _startDelayController.dispose();
     _durationController.dispose();
 
     super.dispose();
   }
 
-  void _saveMission() {
-    final heading = double.tryParse(_headingController.text.trim());
-    final depth = double.tryParse(_depthController.text.trim());
-    final power = double.tryParse(_powerController.text.trim());
-    final startDelay = double.tryParse(_startDelayController.text.trim());
-    final duration = double.tryParse(_durationController.text.trim());
+  Future<void> _saveTorpedoMission() async {
+    final heading = double.tryParse(_headingController.text);
+
+    final depth = double.tryParse(_depthController.text);
+
+    final rpm = double.tryParse(_rpmController.text);
+
+    final startDelay = double.tryParse(_startDelayController.text);
+
+    final duration = double.tryParse(_durationController.text);
 
     if (heading == null ||
         depth == null ||
-        power == null ||
+        rpm == null ||
         startDelay == null ||
         duration == null) {
-      _showError("Semua nilai harus berupa angka.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid torpedo mission value.')),
+      );
+
       return;
     }
 
-    MavlinkData.torpedo.heading = heading;
-    MavlinkData.torpedo.depth = depth;
-    MavlinkData.torpedo.power = power;
-    MavlinkData.torpedo.startDelay = startDelay;
-    MavlinkData.torpedo.duration = duration;
+    if (depth < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Depth cannot be negative.')),
+      );
+
+      return;
+    }
+
+    if (rpm < 0) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('RPM cannot be negative.')));
+
+      return;
+    }
+
+    if (startDelay < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Start delay cannot be negative.')),
+      );
+
+      return;
+    }
+
+    final mission = MavlinkData.torpedo;
+
+    mission.autoTargetHeading = _autoTargetHeading;
+    mission.heading = heading;
+    mission.depth = depth;
+    mission.power = rpm;
+    mission.startDelay = startDelay;
+    mission.duration = duration;
+
+    await SettingsService.setTorpedoMission(mission);
 
     debugPrint(
-      "[TORPEDO] Mission data updated | "
-      "Heading=$heading | "
-      "Depth=$depth | "
-      "Power=$power | "
-      "StartDelay=$startDelay | "
-      "Duration=$duration",
+      '[TORPEDO] Mission settings updated | '
+      'Mode=${mission.autoTargetHeading ? "AUTO" : "MANUAL"} | '
+      'Heading=${mission.heading} | '
+      'Depth=${mission.depth} | '
+      'RPM=${mission.power} | '
+      'StartDelay=${mission.startDelay} | '
+      'Duration=${mission.duration}',
     );
 
-    Navigator.of(context).pop();
-  }
-
-  void _resetMission() {
-    setState(() {
-      _headingController.text = "0";
-      _depthController.text = "0";
-      _powerController.text = "1500";
-      _startDelayController.text = "0";
-      _durationController.text = "-1";
-    });
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
-    );
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: const Color(0xFF18181E),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: const BorderSide(color: Colors.white12),
-      ),
-      child: SizedBox(
-        width: 460,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
+    return AlertDialog(
+      title: const Text('Custom Torpedo Target'),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.navigation, size: 20, color: Colors.white70),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Text(
-                      "TORPEDO MISSION",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: "Close",
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
+              _buildHeadingMode(),
 
-              const SizedBox(height: 8),
-
-              const Text(
-                "Mission ini digunakan bersama oleh seluruh torpedo. "
-                "Torpedo ID ditentukan saat switch joystick ditoggle.",
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 12,
-                  height: 1.4,
-                ),
-              ),
-
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               _buildNumberField(
                 controller: _headingController,
-                label: "Heading",
-                suffix: "deg",
+                label: 'Manual Heading',
+                suffix: '°',
+                enabled: !_autoTargetHeading,
+                decimal: true,
               ),
 
               const SizedBox(height: 12),
 
               _buildNumberField(
                 controller: _depthController,
-                label: "Depth",
-                suffix: "m",
+                label: 'Depth',
+                suffix: 'm',
+                decimal: true,
               ),
 
               const SizedBox(height: 12),
 
               _buildNumberField(
-                controller: _powerController,
-                label: "Power",
-                suffix: "PWM",
+                controller: _rpmController,
+                label: 'RPM',
+                decimal: false,
               ),
 
               const SizedBox(height: 12),
 
               _buildNumberField(
                 controller: _startDelayController,
-                label: "Launch Start Delay",
-                suffix: "s",
+                label: 'Start Delay',
+                suffix: 's',
+                decimal: true,
               ),
 
               const SizedBox(height: 12),
 
               _buildNumberField(
                 controller: _durationController,
-                label: "Launch Duration",
-                suffix: "s",
-              ),
-
-              const SizedBox(height: 24),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _resetMission,
-                      child: const Text("RESET"),
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _saveMission,
-                      child: const Text("SAVE"),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    for (int torpedoId = 21; torpedoId <= 24; torpedoId++) {
-                      MavlinkService.sendTorpedoReset(torpedoId: torpedoId);
-                    }
-                  },
-                  icon: const Icon(Icons.restart_alt, size: 16),
-                  label: const Text(
-                    "RESET TORPEDO STATE",
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                ),
+                label: 'Duration',
+                suffix: 's',
+                decimal: true,
+                signed: true,
               ),
             ],
           ),
         ),
+      ),
+      actions: [
+        Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ActionButton(
+              text: "CANCEL",
+              color: Colors.red,
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            const SizedBox(width: 12),
+            ActionButton(
+              text: "RESET TORPEDO",
+              color: Colors.orange,
+              onTap: () {
+                for (int torpedoId = 21; torpedoId <= 24; torpedoId++) {
+                  MavlinkService.sendTorpedoReset(torpedoId: torpedoId);
+                }
+              },
+            ),
+            const SizedBox(width: 12),
+            ActionButton(
+              text: "SAVE",
+              color: Colors.green,
+              onTap: () {
+                _saveTorpedoMission();
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeadingMode() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.navigation_rounded, size: 20),
+          const SizedBox(width: 10),
+
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Auto Set Heading To Target',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Calculate heading to locked target automatically',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+
+          Switch(
+            value: _autoTargetHeading,
+            onChanged: (value) {
+              setState(() {
+                _autoTargetHeading = value;
+              });
+            },
+          ),
+        ],
       ),
     );
   }
@@ -258,29 +274,28 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
   Widget _buildNumberField({
     required TextEditingController controller,
     required String label,
-    required String suffix,
+    String? suffix,
+    bool enabled = true,
+    bool decimal = true,
+    bool signed = false,
   }) {
     return TextField(
       controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(
-        decimal: true,
-        signed: true,
+      enabled: enabled,
+      keyboardType: TextInputType.numberWithOptions(
+        decimal: decimal,
+        signed: signed,
       ),
-      style: const TextStyle(fontSize: 14, color: Colors.white),
+      inputFormatters: [
+        if (decimal)
+          FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d*'))
+        else
+          FilteringTextInputFormatter.digitsOnly,
+      ],
       decoration: InputDecoration(
         labelText: label,
         suffixText: suffix,
-        filled: true,
-        fillColor: const Color(0xFF222229),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: Colors.white12),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: Colors.white54),
-        ),
+        border: const OutlineInputBorder(),
       ),
     );
   }

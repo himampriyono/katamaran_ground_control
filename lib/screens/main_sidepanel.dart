@@ -40,7 +40,7 @@ class MainSidePanel extends StatelessWidget {
               const SizedBox(height: 8),
 
               _buildEngineTelemetryWidget(),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
 
               _buildPanelHeader("TORPEDO SYSTEMS"),
               const SizedBox(height: 12),
@@ -729,7 +729,7 @@ class MainSidePanel extends StatelessWidget {
             },
             icon: const Icon(Icons.settings, size: 16),
             label: const Text(
-              "MISSION SETTINGS",
+              "TORPEDO SETTINGS",
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,

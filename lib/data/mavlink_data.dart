@@ -30,6 +30,7 @@ class MavlinkData {
   static GlobalPositionInt? lastGlobalPositionInt;
   static HomePosition? lastHomePosition;
   static GpsRawInt? lastGpsRawInt;
+  static McuStatus? lastMcuStatus;
   static List<int> rcChannels = List.filled(16, 1500);
   static List<int> pwmOutput = List.filled(16, 950);
   static MissionCurrent? lastMissionCurrent;
@@ -37,6 +38,9 @@ class MavlinkData {
   static List<TorpedoStatus> torpedoStatuses = List.filled(
     4,
     TorpedoStatus.released,
+  );
+  static final ValueNotifier<TorpedoVoltage> torpedoVoltage = ValueNotifier(
+    const TorpedoVoltage(),
   );
 
   static final Map<String, MavParameter> parameters = {};
@@ -119,6 +123,7 @@ class MissionTransferProgress {
 }
 
 class TorpedoMissionData {
+  bool autoTargetHeading;
   double heading;
   double depth;
   double power;
@@ -126,10 +131,21 @@ class TorpedoMissionData {
   double duration;
 
   TorpedoMissionData({
+    this.autoTargetHeading = true,
     this.heading = 0,
     this.depth = 0,
     this.power = 0,
     this.startDelay = 0,
     this.duration = -1,
   });
+}
+
+class TorpedoVoltage {
+  final Map<int, double> values;
+
+  const TorpedoVoltage({this.values = const {}});
+
+  double get(int torpedoId) {
+    return values[torpedoId] ?? 0.0;
+  }
 }
