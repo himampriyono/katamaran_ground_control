@@ -42,6 +42,8 @@ class MavlinkData {
   static final ValueNotifier<TorpedoVoltage> torpedoVoltage = ValueNotifier(
     const TorpedoVoltage(),
   );
+  static final ValueNotifier<BoatEngineTelemetry> boatEngineTelemetry =
+      ValueNotifier(const BoatEngineTelemetry());
 
   static final Map<String, MavParameter> parameters = {};
   static int parameterCount = 0;
@@ -54,8 +56,6 @@ class MavlinkData {
   static int missionLoaded = 0;
 
   static LatLng? gotoTarget;
-  // static LatLng? circleTarget;
-  // static LatLng? objectCoord;
   static bool isObjectValid = false;
 
   static Rpm? rpm;
@@ -147,5 +147,33 @@ class TorpedoVoltage {
 
   double get(int torpedoId) {
     return values[torpedoId] ?? 0.0;
+  }
+}
+
+class BoatEngineTelemetry {
+  final double? motor1Rpm;
+  final double? motor2Rpm;
+  final double? motor1FuelPercent;
+  final double? motor2FuelPercent;
+
+  const BoatEngineTelemetry({
+    this.motor1Rpm,
+    this.motor2Rpm,
+    this.motor1FuelPercent,
+    this.motor2FuelPercent,
+  });
+
+  BoatEngineTelemetry copyWith({
+    double? motor1Rpm,
+    double? motor2Rpm,
+    double? motor1FuelPercent,
+    double? motor2FuelPercent,
+  }) {
+    return BoatEngineTelemetry(
+      motor1Rpm: motor1Rpm ?? this.motor1Rpm,
+      motor2Rpm: motor2Rpm ?? this.motor2Rpm,
+      motor1FuelPercent: motor1FuelPercent ?? this.motor1FuelPercent,
+      motor2FuelPercent: motor2FuelPercent ?? this.motor2FuelPercent,
+    );
   }
 }

@@ -22,31 +22,36 @@ class MainSidePanel extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          ListView(
-            children: [
-              _buildPanelMainHeader(context, "COMMAND & STATUS"),
-              const SizedBox(height: 16),
+          ScrollConfiguration(
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(scrollbars: false),
+            child: ListView(
+              children: [
+                _buildPanelMainHeader(context, "COMMAND & STATUS"),
+                const SizedBox(height: 16),
 
-              _buildArmingWidget(),
-              const SizedBox(height: 12),
+                _buildArmingWidget(),
+                const SizedBox(height: 12),
 
-              _buildModeWidget(),
-              const SizedBox(height: 12),
+                _buildModeWidget(),
+                const SizedBox(height: 12),
 
-              _buildArtificialHorizon(),
-              const SizedBox(height: 12),
+                _buildArtificialHorizon(),
+                const SizedBox(height: 12),
 
-              _buildBasicDataWidget(),
-              const SizedBox(height: 8),
+                _buildBasicDataWidget(),
+                const SizedBox(height: 8),
 
-              _buildEngineTelemetryWidget(),
-              const SizedBox(height: 16),
+                _buildEngineTelemetryWidget(),
+                const SizedBox(height: 16),
 
-              _buildPanelHeader("TORPEDO SYSTEMS"),
-              const SizedBox(height: 12),
-              _buildTorpedoStatusWidget(context),
-              const SizedBox(height: 12),
-            ],
+                _buildPanelHeader("TORPEDO SYSTEMS"),
+                const SizedBox(height: 12),
+                _buildTorpedoStatusWidget(context),
+                const SizedBox(height: 12),
+              ],
+            ),
           ),
         ],
       ),
@@ -497,7 +502,7 @@ class MainSidePanel extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "CURRENT POSITION",
+                    "CURRENT SHIP POSITION",
                     style: const TextStyle(
                       color: Colors.white38,
                       fontSize: 10,
@@ -507,76 +512,77 @@ class MainSidePanel extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 5),
-              Column(
-                spacing: 4,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: EdgeInsetsGeometry.symmetric(horizontal: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              if (MavlinkData.isObjectValid)
+                Column(
+                  spacing: 4,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: EdgeInsetsGeometry.symmetric(horizontal: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ValueListenableBuilder(
+                            valueListenable: AppData.objectCoord,
+                            builder: (context, objPos, _) {
+                              final (
+                                oUtmZone,
+                                oUtmX,
+                                oUtmY,
+                              ) = AppUtils.latLonToUtm(
+                                (AppData.objectCoord.value.latitude),
+                                (AppData.objectCoord.value.longitude),
+                              );
+                              return Text(
+                                (!MavlinkData.isObjectValid)
+                                    ? "--"
+                                    : ((AppData.selectedPosUnit.value ==
+                                              PositionUnit.utm)
+                                          ? "${oUtmZone}, ${(oUtmX).toStringAsFixed(2)}, ${(oUtmY).toStringAsFixed(2)}"
+                                          : "${(AppData.objectCoord.value.latitude).toStringAsFixed(7)}, ${(AppData.objectCoord.value.longitude).toStringAsFixed(7)}"),
+                                style: const TextStyle(
+                                  color: Colors.deepOrange,
+                                  fontSize: 14,
+                                  // fontWeight: FontWeight.w900,
+                                  fontFamily: 'Courier',
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      "OBJECT POSITION ESTIMATE",
+                      style: const TextStyle(
+                        color: Colors.white38,
+                        fontSize: 10,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      spacing: 4,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        ValueListenableBuilder(
-                          valueListenable: AppData.objectCoord,
-                          builder: (context, objPos, _) {
-                            final (
-                              oUtmZone,
-                              oUtmX,
-                              oUtmY,
-                            ) = AppUtils.latLonToUtm(
-                              (AppData.objectCoord.value.latitude),
-                              (AppData.objectCoord.value.longitude),
-                            );
-                            return Text(
-                              (!MavlinkData.isObjectValid)
-                                  ? "--"
-                                  : ((AppData.selectedPosUnit.value ==
-                                            PositionUnit.utm)
-                                        ? "${oUtmZone}, ${(oUtmX).toStringAsFixed(2)}, ${(oUtmY).toStringAsFixed(2)}"
-                                        : "${(AppData.objectCoord.value.latitude).toStringAsFixed(7)}, ${(AppData.objectCoord.value.longitude).toStringAsFixed(7)}"),
-                              style: const TextStyle(
-                                color: Colors.deepOrange,
-                                fontSize: 14,
-                                // fontWeight: FontWeight.w900,
-                                fontFamily: 'Courier',
-                              ),
+                        ValueListenableBuilder<double>(
+                          valueListenable: AppData.headingToTarget,
+                          builder: (context, headingVal, _) {
+                            return _buildDataItem(
+                              title: "HEADING TO OBJECT",
+                              value: MavlinkData.isObjectValid
+                                  ? "${headingVal.toStringAsFixed(1)}°"
+                                  : "--",
                             );
                           },
                         ),
                       ],
                     ),
-                  ),
-                  Text(
-                    "OBJECT POSITION ESTIMATE",
-                    style: const TextStyle(
-                      color: Colors.white38,
-                      fontSize: 10,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    spacing: 4,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      ValueListenableBuilder<double>(
-                        valueListenable: AppData.headingToTarget,
-                        builder: (context, headingVal, _) {
-                          return _buildDataItem(
-                            title: "HEADING TO OBJECT",
-                            value: MavlinkData.isObjectValid
-                                ? "${headingVal.toStringAsFixed(1)}°"
-                                : "--",
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                  ],
+                ),
             ],
           ),
         );
@@ -807,26 +813,84 @@ class MainSidePanel extends StatelessWidget {
   }
 
   Widget _buildEngineTelemetryWidget() {
-    return ValueListenableBuilder<int>(
-      valueListenable: NotifierService
-          .attitudeTrigger, // Sesuaikan dengan trigger pembaruan data telemetri mesin
-      builder: (context, _, child) {
-        // Ambil data RPM berdasarkan index motor (0 untuk Motor 1, 1 untuk Motor 2)
-        final rpm1Data = MavlinkData.motor1Rpm;
-        final rpm2Data = MavlinkData.motor2Rpm;
-        final efiData = MavlinkData.efiStatus;
+    return ValueListenableBuilder<BoatEngineTelemetry>(
+      valueListenable: MavlinkData.boatEngineTelemetry,
+      builder: (context, engine, child) {
+        final rpm1Text = engine.motor1Rpm?.toStringAsFixed(0) ?? "--";
+        final rpm2Text = engine.motor2Rpm?.toStringAsFixed(0) ?? "--";
+        double? normalizeFuel(double? value) {
+          if (value == null) return null;
+          return value.clamp(0.0, 100.0);
+        }
 
-        String rpm1Text = rpm1Data != null ? rpm1Data.toStringAsFixed(0) : "--";
-        String rpm2Text = rpm2Data != null ? rpm2Data.toStringAsFixed(0) : "--";
+        Color fuelColor(double? value) {
+          final percent = normalizeFuel(value);
 
-        // Contoh mengambil parameter dari EfiStatus (misal: tegangan injeksi / ignition_voltage)
-        String efiVoltText = efiData != null
-            ? "${efiData.fuelConsumed.toStringAsFixed(1)}V"
-            : "--";
+          if (percent == null)
+            return Colors.red;
+          else if (percent <= 30)
+            return Colors.deepOrange;
+          else if (percent <= 50)
+            return Colors.orange;
+          else if (percent <= 75)
+            return Colors.yellow;
+
+          return Colors.green;
+        }
+
+        Widget fuelItem(String title, double? rawValue) {
+          final percent = normalizeFuel(rawValue);
+          final color = fuelColor(rawValue);
+
+          return Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 9,
+                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        percent == null
+                            ? "--"
+                            : "${percent.toStringAsFixed(0)}%",
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: percent == null ? 0 : percent / 100,
+                      minHeight: 7,
+                      backgroundColor: Colors.white12,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
           decoration: BoxDecoration(
             color: const Color(0xFF1A1A20),
             borderRadius: BorderRadius.circular(4),
@@ -836,7 +900,7 @@ class MainSidePanel extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                "DUAL MOTORS & EFI STATUS",
+                "SHIP ENGINE STATUS",
                 style: TextStyle(
                   color: Colors.white38,
                   fontSize: 9,
@@ -844,7 +908,9 @@ class MainSidePanel extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
+
+              // RPM
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -860,12 +926,20 @@ class MainSidePanel extends StatelessWidget {
                     valueColor: Colors.cyanAccent,
                     valueSize: 14,
                   ),
-                  _buildDataItem(
-                    title: "EFI VOLT",
-                    value: efiVoltText,
-                    valueColor: Colors.amberAccent,
-                    valueSize: 14,
-                  ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+
+              Divider(height: 1, color: Colors.white.withAlpha(20)),
+
+              const SizedBox(height: 8),
+
+              // Fuel level
+              Row(
+                children: [
+                  fuelItem("MOTOR 1 FUEL", engine.motor1FuelPercent),
+                  fuelItem("MOTOR 2 FUEL", engine.motor2FuelPercent),
                 ],
               ),
             ],

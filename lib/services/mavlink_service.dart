@@ -283,6 +283,7 @@ class MavlinkService {
       _handleNamedValueInt(message);
     } else if (message is NamedValueFloat) {
       _handleNamedValueFloat(message);
+      _handleEngineTelemetryFloat(message);
     } else if (message is McuStatus) {
       MavlinkData.lastMcuStatus = message;
       NotifierService.triggerStatusUpdate();
@@ -1045,6 +1046,47 @@ class MavlinkService {
       );
 
       _pendingTorpedoLaunches.remove(torpedoId);
+    }
+  }
+
+  void _handleEngineTelemetryFloat(NamedValueFloat message) {
+    final name = String.fromCharCodes(
+      message.name.takeWhile((code) => code != 0).map((code) => code & 0xFF),
+    ).trim();
+
+    if (name != "M1_RPM" &&
+        name != "M2_RPM" &&
+        name != "M1_FUEL" &&
+        name != "M2_FUEL")
+      return;
+
+    final value = message.value.toDouble();
+    final current = MavlinkData.boatEngineTelemetry.value;
+
+    switch (name) {
+      case "M1_RPM":
+        MavlinkData.boatEngineTelemetry.value = current.copyWith(
+          motor1Rpm: value,
+        );
+        break;
+      case "M2_RPM":
+        MavlinkData.boatEngineTelemetry.value = current.copyWith(
+          motor2Rpm: value,
+        );
+        break;
+      case "M1_FUEL":
+        MavlinkData.boatEngineTelemetry.value = current.copyWith(
+          motor1FuelPercent: value,
+        );
+        break;
+      case "M2_FUEL":
+        MavlinkData.boatEngineTelemetry.value = current.copyWith(
+          motor2FuelPercent: value,
+        );
+        break;
+
+      default:
+        break;
     }
   }
 }
