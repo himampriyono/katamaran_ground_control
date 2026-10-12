@@ -14,7 +14,7 @@ enum MapType { vectorOffline, satelliteOffline, googleMap }
 enum GotoMenuAction { none, goHere, circleHere }
 
 class AppData {
-  static final appName = "Katamaran Mission Monitoring Control";
+  static final appName = "Katamaran Mission Monitoring Console";
   static final ValueNotifier<SpeedUnit> selectedSpeedUnit = ValueNotifier(
     SpeedUnit.metric,
   );

@@ -274,7 +274,7 @@ class MainSidePanel extends StatelessWidget {
                     width: 400,
                     height: 400,
                     child: Transform.rotate(
-                      angle: roll,
+                      angle: -roll,
                       child: Transform.translate(
                         offset: Offset(0, pitchOffset),
                         child: Stack(
@@ -292,7 +292,6 @@ class MainSidePanel extends StatelessWidget {
                               ],
                             ),
 
-                            // Garis-garis Sudut (Pitch Ladder)
                             ..._buildPitchLadder(),
                           ],
                         ),
@@ -735,7 +734,7 @@ class MainSidePanel extends StatelessWidget {
             },
             icon: const Icon(Icons.settings, size: 16),
             label: const Text(
-              "TORPEDO SETTINGS",
+              "ADJUST TORPEDO MISSION",
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
@@ -930,12 +929,9 @@ class MainSidePanel extends StatelessWidget {
               ),
 
               const SizedBox(height: 10),
-
               Divider(height: 1, color: Colors.white.withAlpha(20)),
-
               const SizedBox(height: 8),
 
-              // Fuel level
               Row(
                 children: [
                   fuelItem("MOTOR 1 FUEL", engine.motor1FuelPercent),

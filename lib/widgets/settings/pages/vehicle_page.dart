@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../services/mission_service.dart';
 import '../widgets/action_button.dart';
 import '../widgets/setting_page_header.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/settings_tile.dart';
 import '../windows/fc_radio_monitor.dart';
 import '../windows/parameter_manager.dart';
-import '../windows/pwm_output_monitor.dart';
 
 class VehiclePage extends StatelessWidget {
   const VehiclePage({super.key});
@@ -64,37 +62,6 @@ class VehiclePage extends StatelessWidget {
             ),
           ),
           SizedBox(height: 12),
-          SettingsGroup(
-            title: "TES",
-            child: SettingsTile(
-              title: "Tes Misi",
-              trailing: ActionButton(
-                text: "Dw misi",
-                color: Colors.red,
-                onTap: () {
-                  MissionService.requestMissionList();
-                },
-              ),
-            ),
-          ),
-          // SettingsGroup(
-          //   title: "Output",
-          //   child: SettingsTile(
-          //     title: "PWM Output",
-          //     trailing: ActionButton(
-          //       text: "Open Output Monitor",
-          //       color: Colors.orange,
-          //       onTap: () {
-          //         showDialog(
-          //           context: context,
-          //           builder: (_) {
-          //             return PwmOutputMonitor();
-          //           },
-          //         );
-          //       },
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );

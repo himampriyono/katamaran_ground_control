@@ -44,6 +44,7 @@ flutter:
     - assets/ship.png
     - assets/arrow.png
     - assets/cat.gif
+    - assets/icon.png
     - assets/parameters/apm.pdef.xml
     - assets/map_style/
     - assets/fonts/

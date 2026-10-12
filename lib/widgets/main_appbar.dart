@@ -18,10 +18,9 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       title: Row(
         children: [
-          const Icon(
-            Icons.directions_boat_filled,
-            color: Colors.white70,
-            size: 22,
+          const Image(
+            image: AssetImage("assets/icon.png"),
+            width: 48,
           ),
           const SizedBox(width: 10),
           Column(
@@ -29,7 +28,7 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "${(AppData.appName).toUpperCase()}",
+                (AppData.appName).toUpperCase(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,

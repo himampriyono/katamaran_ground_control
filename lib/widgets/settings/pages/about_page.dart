@@ -5,6 +5,12 @@ class AboutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text("CAPEK"));
+    return Padding(
+      padding: EdgeInsets.all(24),
+      child: Column(children: [
+        const Text("Katamaran Mission Monitoring Console"),
+        const Text("- 2026")
+      ]),
+    );
   }
 }
