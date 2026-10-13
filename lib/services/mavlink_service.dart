@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dart_mavlink/mavlink.dart';
@@ -288,6 +289,8 @@ class MavlinkService {
       MavlinkData.lastMcuStatus = message;
       NotifierService.triggerStatusUpdate();
       // debugPrint("${message.mcuTemperature / 100}");
+    } else if (message is Statustext) {
+      _handleStatusText(message);
     }
   }
 
@@ -842,11 +845,26 @@ class MavlinkService {
     final values = Map<int, double>.from(current.values);
     values[torpedoId] = voltage;
     MavlinkData.torpedoVoltage.value = TorpedoVoltage(values: values);
+  }
 
-    // debugPrint(
-    //   '[TORPEDO] Voltage T$torpedoId = '
-    //   '${voltage.toStringAsFixed(2)} V',
-    // );
+  static _handleStatusText(Statustext message) {
+    final bytes = message.text
+        .map((byte) => byte & 0xFF)
+        .takeWhile((byte) => byte != 0)
+        .toList();
+    final text = utf8.decode(bytes, allowMalformed: true).trim();
+
+    if (text.isEmpty) return;
+
+    MavlinkData.addStatusTextMessage(message);
+
+    final severity = message.severity;
+
+    if (severity == mavSeverityWarning) {
+      Snackbar.show(text);
+    } else if (severity < mavSeverityWarning) {
+      Snackbar.show(text, isWarning: true);
+    }
   }
 
   static void sendCommandLongTorpedo({

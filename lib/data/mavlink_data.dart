@@ -44,6 +44,8 @@ class MavlinkData {
   );
   static final ValueNotifier<BoatEngineTelemetry> boatEngineTelemetry =
       ValueNotifier(const BoatEngineTelemetry());
+  static final ValueNotifier<List<Statustext>> statusTextMessages =
+      ValueNotifier(<Statustext>[]);
 
   static final Map<String, MavParameter> parameters = {};
   static int parameterCount = 0;
@@ -69,6 +71,19 @@ class MavlinkData {
   );
 
   static final TorpedoMissionData torpedo = TorpedoMissionData();
+
+  static void addStatusTextMessage(Statustext message) {
+    final messages = List<Statustext>.from(statusTextMessages.value)
+      ..add(message);
+
+    if (messages.length > 200) {
+      messages.removeRange(0, messages.length - 200);
+    }
+
+    statusTextMessages.value = List<Statustext>.unmodifiable(messages);
+
+    debugPrint('[MESSAGE STORE] Count: ${statusTextMessages.value.length}');
+  }
 
   static void reset() {
     isMavlinkConnected = false;

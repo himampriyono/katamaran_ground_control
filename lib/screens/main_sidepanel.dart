@@ -7,6 +7,7 @@ import '../services/mavlink_service.dart';
 import '../data/mavlink_data.dart';
 import '../utils/app_utils.dart';
 import 'torpedo_window.dart';
+import 'message_window.dart';
 
 class MainSidePanel extends StatelessWidget {
   const MainSidePanel({super.key});
@@ -125,34 +126,27 @@ class MainSidePanel extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Column(
               children: [
-                Container(
-                  width: double.infinity,
-                  child: Text(
-                    "MODE",
-                    style: TextStyle(color: Colors.white, fontSize: 11),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
                 Row(
                   spacing: 8,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      modeName,
+                      "MODE:",
                       style: TextStyle(
                         color: Colors.yellow,
                         fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                        // fontWeight: FontWeight.bold,
                       ),
                     ),
                     PopupMenuButton(
                       color: const Color(0xFF1A1A20),
                       elevation: 4,
+                      tooltip: "Change Mode",
                       offset: const Offset(0, 24),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4),
                         side: BorderSide(color: Colors.white, width: 0.5),
-                      ),
+                      ),  
                       onSelected: (int selectedModeNum) {
                         debugPrint(
                           "change mode to ${_getModeName(selectedModeNum)}",
@@ -181,7 +175,7 @@ class MainSidePanel extends StatelessWidget {
                                 color: mode == modeNum
                                     ? Colors.yellow
                                     : Colors.white,
-                                fontSize: 11,
+                                fontSize: 14,
                                 fontWeight: mode == modeNum
                                     ? FontWeight.bold
                                     : FontWeight.normal,
@@ -202,11 +196,11 @@ class MainSidePanel extends StatelessWidget {
                           color: Colors.orangeAccent.withAlpha(20),
                           borderRadius: BorderRadius.circular(2),
                         ),
-                        child: const Text(
-                          "CHANGE MODE",
+                        child: Text(
+                          modeName,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -601,6 +595,23 @@ class MainSidePanel extends StatelessWidget {
             fontWeight: FontWeight.w900,
             letterSpacing: 2.0,
           ),
+        ),
+
+        IconButton(
+          icon: const Icon(
+            Icons.article_outlined,
+            color: Colors.white30,
+            size: 18,
+          ),
+          tooltip: 'Open MAVLink Messages Window',
+          constraints: const BoxConstraints(),
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            showDialog<void>(
+              context: context,
+              builder: (_) => const MessageWindow(),
+            );
+          },
         ),
 
         IconButton(

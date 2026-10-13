@@ -1,6 +1,6 @@
 name: katamaran_ground_control
-description: "A new Flutter project."
-publish_to: 'none'
+description: "A Flutter project for goverment project."
+publish_to: 'the broken world'
 version: 0.1.0+1
 
 environment:

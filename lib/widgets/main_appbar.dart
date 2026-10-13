@@ -18,10 +18,7 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       title: Row(
         children: [
-          const Image(
-            image: AssetImage("assets/icon.png"),
-            width: 48,
-          ),
+          const Image(image: AssetImage("assets/icon.png"), width: 48),
           const SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,14 +33,19 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
                   letterSpacing: 2.0,
                 ),
               ),
-              Text(
-                "UDP PORT : ${MavlinkData.currentPort}",
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.blueGrey[400],
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
-                ),
+              ValueListenableBuilder(
+                valueListenable: NotifierService.connectionTrigger,
+                builder: (context, connection, child) {
+                  return Text(
+                    "CURRENT SHIP IP : ${SettingsService.vesselIp}",
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.blueGrey[400],
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                    ),
+                  );
+                },
               ),
             ],
           ),

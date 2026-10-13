@@ -7,7 +7,6 @@ class Snackbar {
   static void show(String pesan, {bool isWarning = false}) {
     messengerKey.currentState?.clearSnackBars();
 
-    // Konfigurasi warna dan ikon berdasarkan tipe pesan
     final Color colorAccent = isWarning
         ? const Color(0xFFFF3333)
         : const Color.fromARGB(255, 8, 153, 8);
@@ -18,22 +17,26 @@ class Snackbar {
 
     messengerKey.currentState?.showSnackBar(
       SnackBar(
-        backgroundColor: Colors
-            .transparent, // Dibuat transparan agar bentuk kustom di bawah terlihat
+        backgroundColor: Colors.transparent,
         elevation: 0,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.only(left: 20, bottom: 20, right: 450),
         duration: const Duration(seconds: 3),
         content: Container(
           decoration: BoxDecoration(
-            color: const Color.fromARGB(220, 37, 37, 37), // Warna dasar super dark navy/black
+            color: const Color.fromARGB(
+              220,
+              37,
+              37,
+              37,
+            ),
             borderRadius: BorderRadius.circular(4),
             border: Border.all(color: Colors.white10, width: 1),
             boxShadow: [
               BoxShadow(
                 color: colorAccent.withAlpha(
                   20,
-                ), // Efek glow tipis sesuai status
+                ),
                 blurRadius: 12,
                 spreadRadius: 1,
               ),
@@ -46,7 +49,6 @@ class Snackbar {
                 Container(width: 4, height: 48, color: colorAccent),
                 const SizedBox(width: 14),
 
-                // 2. Ikon Status dengan efek background lingkaran transparan
                 Container(
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
@@ -64,7 +66,6 @@ class Snackbar {
                 ),
                 const SizedBox(width: 14),
 
-                // 3. Detail Teks (Kombinasi Label Kategori & Isi Pesan)
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -95,7 +96,6 @@ class Snackbar {
                             color: Colors.white,
                             fontFamily: 'Courier',
                             fontSize: 12,
-                            // fontWeight: FontWeight.bold,
                             letterSpacing: 0.3,
                             shadows: [
                               Shadow(
@@ -110,7 +110,6 @@ class Snackbar {
                   ),
                 ),
 
-                // 4. Tombol Close kecil di ujung kanan
                 IconButton(
                   icon: const Icon(
                     Icons.close,
