@@ -54,7 +54,6 @@ class MavlinkServerService {
     }
   }
 
-  // 2. Broadcast data posisi kapal ke semua klien (Aplikasi Kamera)
   void broadcastVesselState(double lat, double lon, double heading) {
     if (_connectedClients.isEmpty) return;
 
@@ -70,7 +69,16 @@ class MavlinkServerService {
     }
   }
 
-  // 3. Tangani pesan dari aplikasi kamera
+  void requestCamStatus() {
+    if (_connectedClients.isEmpty) return;
+
+    final payload = jsonEncode({'type': 'REQ_CAM_STATUS'});
+
+    for (var client in _connectedClients) {
+      client.sink.add(payload);
+    }
+  }
+
   void _handleClientMessage(String message) {
     try {
       final data = jsonDecode(message);
@@ -106,6 +114,14 @@ class MavlinkServerService {
         } else {
           AppData.headingToTarget.value = 0.0;
         }
+      } else if (data['type'] == 'CAM_STATUS') {
+        AppData.camFrontReady = data['cam1'];
+        AppData.camLeftReady = data['cam2'];
+        AppData.camRearReady = data['cam3'];
+        AppData.camRightReady = data['cam4'];
+
+        // debugPrint("$cam1Ok, $cam2Ok, $cam3Ok, $cam4Ok");
+
       }
     } catch (e) {
       debugPrint("⚠️ Gagal parsing pesan klien: $e");

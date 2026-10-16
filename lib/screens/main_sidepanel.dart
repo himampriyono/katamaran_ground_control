@@ -8,6 +8,7 @@ import '../data/mavlink_data.dart';
 import '../utils/app_utils.dart';
 import 'torpedo_window.dart';
 import 'message_window.dart';
+import 'system_check_window.dart';
 
 class MainSidePanel extends StatelessWidget {
   const MainSidePanel({super.key});
@@ -146,7 +147,7 @@ class MainSidePanel extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4),
                         side: BorderSide(color: Colors.white, width: 0.5),
-                      ),  
+                      ),
                       onSelected: (int selectedModeNum) {
                         debugPrint(
                           "change mode to ${_getModeName(selectedModeNum)}",
@@ -595,6 +596,23 @@ class MainSidePanel extends StatelessWidget {
             fontWeight: FontWeight.w900,
             letterSpacing: 2.0,
           ),
+        ),
+
+        IconButton(
+          icon: const Icon(
+            Icons.health_and_safety_outlined,
+            color: Colors.white30,
+            size: 18,
+          ),
+          tooltip: 'System Check',
+          constraints: const BoxConstraints(),
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            showDialog<void>(
+              context: context,
+              builder: (_) => const SystemCheckWindow(),
+            );
+          },
         ),
 
         IconButton(

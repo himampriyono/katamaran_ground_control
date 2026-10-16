@@ -56,6 +56,11 @@ class AppData {
   static final ValueNotifier<JetsonTelemetry> jetsonTelemetry = ValueNotifier(
     const JetsonTelemetry(),
   );
+
+  static bool camFrontReady = false;
+  static bool camLeftReady = false;
+  static bool camRearReady = false;
+  static bool camRightReady = false;
 }
 
 class JetsonTelemetry {
