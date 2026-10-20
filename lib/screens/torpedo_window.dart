@@ -20,6 +20,7 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
   late final TextEditingController _durationController;
 
   late bool _autoTargetHeading;
+  int _selectedTab = 0;
 
   @override
   void initState() {
@@ -134,98 +135,125 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Custom Torpedo Target'),
-      content: SizedBox(
-        width: 420,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildHeadingMode(),
-
-              const SizedBox(height: 16),
-
-              _buildNumberField(
-                controller: _headingController,
-                label: 'Manual Heading',
-                suffix: '°',
-                enabled: !_autoTargetHeading,
-                decimal: true,
+    return DefaultTabController(
+      length: 2,
+      child: Builder(
+        builder: (tabContext) {
+          return AlertDialog(
+            title: const Text('TORPEDO MENU', textAlign: TextAlign.center,),
+            content: SizedBox(
+              width: 420,
+              height: 420,
+              child: Column(
+                children: [
+                  const Divider(),
+                  TabBar(
+                    onTap: (index) {
+                      setState(() {
+                        _selectedTab = index;
+                      });
+                    },
+                    tabs: const [
+                      Tab(text: 'GRIPPER CONTROL'),
+                      Tab(text: 'MISSION'),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        SingleChildScrollView(child: _buildGripperControls()),
+                        SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildHeadingMode(),
+                              const SizedBox(height: 16),
+                              _buildNumberField(
+                                controller: _headingController,
+                                label: 'Manual Heading',
+                                suffix: '°',
+                                enabled: !_autoTargetHeading,
+                                decimal: true,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildNumberField(
+                                controller: _depthController,
+                                label: 'Depth',
+                                suffix: 'm',
+                                decimal: true,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildNumberField(
+                                controller: _rpmController,
+                                label: 'RPM',
+                                decimal: false,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildNumberField(
+                                controller: _startDelayController,
+                                label: 'Start Delay',
+                                suffix: 's',
+                                decimal: true,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildNumberField(
+                                controller: _durationController,
+                                label: 'Duration',
+                                suffix: 's',
+                                decimal: true,
+                                signed: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-
-              const SizedBox(height: 12),
-
-              _buildNumberField(
-                controller: _depthController,
-                label: 'Depth',
-                suffix: 'm',
-                decimal: true,
-              ),
-
-              const SizedBox(height: 12),
-
-              _buildNumberField(
-                controller: _rpmController,
-                label: 'RPM',
-                decimal: false,
-              ),
-
-              const SizedBox(height: 12),
-
-              _buildNumberField(
-                controller: _startDelayController,
-                label: 'Start Delay',
-                suffix: 's',
-                decimal: true,
-              ),
-
-              const SizedBox(height: 12),
-
-              _buildNumberField(
-                controller: _durationController,
-                label: 'Duration',
-                suffix: 's',
-                decimal: true,
-                signed: true,
-              ),
+            ),
+            actions: [
+              if (_selectedTab == 1)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ActionButton(
+                      text: 'CANCEL',
+                      color: Colors.red,
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
+                    const SizedBox(width: 12),
+                    ActionButton(
+                      text: 'RESET TORPEDO',
+                      color: Colors.orange,
+                      onTap: () {
+                        for (int torpedoId = 21; torpedoId <= 24; torpedoId++) {
+                          MavlinkService.sendTorpedoReset(torpedoId: torpedoId);
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 12),
+                    ActionButton(
+                      text: 'SAVE',
+                      color: Colors.green,
+                      onTap: _saveTorpedoMission,
+                    ),
+                  ],
+                )
+              else
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ActionButton(
+                    text: 'CANCEL',
+                    color: Colors.red,
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                ),
             ],
-          ),
-        ),
+          );
+        },
       ),
-      actions: [
-        Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            ActionButton(
-              text: "CANCEL",
-              color: Colors.red,
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            const SizedBox(width: 12),
-            ActionButton(
-              text: "RESET TORPEDO",
-              color: Colors.orange,
-              onTap: () {
-                for (int torpedoId = 21; torpedoId <= 24; torpedoId++) {
-                  MavlinkService.sendTorpedoReset(torpedoId: torpedoId);
-                }
-              },
-            ),
-            const SizedBox(width: 12),
-            ActionButton(
-              text: "SAVE",
-              color: Colors.green,
-              onTap: () {
-                _saveTorpedoMission();
-              },
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -240,7 +268,6 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
         children: [
           const Icon(Icons.navigation_rounded, size: 20),
           const SizedBox(width: 10),
-
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,7 +284,6 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
               ],
             ),
           ),
-
           Switch(
             value: _autoTargetHeading,
             onChanged: (value) {
@@ -297,6 +323,80 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
         suffixText: suffix,
         border: const OutlineInputBorder(),
       ),
+    );
+  }
+
+  Widget _buildGripperControls() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Manual Gripper Control',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 6),
+        const SizedBox(height: 16),
+
+        for (final torpedoId in [21, 22, 23, 24])
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'GRIPPER ${torpedoId - 20}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      // Text(
+                      //   'ID $torpedoId',
+                      //   style: const TextStyle(fontSize: 12),
+                      // ),
+                    ],
+                  ),
+                ),
+                ActionButton(
+                  text: 'OPEN',
+                  color: Colors.green,
+                  onTap: () =>
+                      _sendGripperCommand(torpedoId: torpedoId, open: true),
+                ),
+                const SizedBox(width: 8),
+                ActionButton(
+                  text: 'CLOSE',
+                  color: Colors.red,
+                  onTap: () =>
+                      _sendGripperCommand(torpedoId: torpedoId, open: false),
+                ),
+              ],
+            ),
+          ),
+
+        const SizedBox(height: 4),
+        // const Text(
+        //   'Gripper position is not confirmed by telemetry.',
+        //   style: TextStyle(fontSize: 11),
+        // ),
+      ],
+    );
+  }
+
+  void _sendGripperCommand({required int torpedoId, required bool open}) {
+    MavlinkService.sendTorpedoGripper(torpedoId: torpedoId, open: open);
+
+    debugPrint(
+      '[GRIPPER] ${open ? "OPEN" : "CLOSE"} command sent '
+      'to torpedo $torpedoId',
     );
   }
 }

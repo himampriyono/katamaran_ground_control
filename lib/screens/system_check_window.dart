@@ -68,8 +68,9 @@ class _SystemCheckContentState extends State<_SystemCheckContent> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              const SizedBox(),
               const Text(
-                'SYSTEM CHECK',
+                'SYSTEM SELF CHECK',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               IconButton(

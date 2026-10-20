@@ -52,6 +52,7 @@ class MavlinkService {
   static const int cmdTorpedoMission = 31010;
   static const int cmdTorpedoLaunch = 31011;
   static const int cmdTorpedoReset = 31012;
+  static const int cmdTorpedoGripper = 31013;
   static final List<bool> _torpedoSwitchState = List.filled(4, false);
   static bool _torpedoSwitchInitialized = false;
   static final Map<int, _PendingTorpedoLaunch> _pendingTorpedoLaunches = {};
@@ -946,6 +947,14 @@ class MavlinkService {
     sendCommandLongTorpedo(
       command: cmdTorpedoReset,
       param1: torpedoId.toDouble(),
+    );
+  }
+
+  static void sendTorpedoGripper({required int torpedoId, required bool open}) {
+    sendCommandLongTorpedo(
+      command: cmdTorpedoGripper,
+      param1: torpedoId.toDouble(),
+      param2: open ? 1.0 : 0.0,
     );
   }
 
