@@ -46,6 +46,9 @@ class MavlinkData {
       ValueNotifier(const BoatEngineTelemetry());
   static final ValueNotifier<List<Statustext>> statusTextMessages =
       ValueNotifier(<Statustext>[]);
+  static final ValueNotifier<Rpm> rpm = ValueNotifier(Rpm(rpm1: 0, rpm2: 0));
+  static final ValueNotifier<EscTelemetry1To4?> escTelemetry1To4 =
+      ValueNotifier(null);
 
   static final Map<String, MavParameter> parameters = {};
   static int parameterCount = 0;
@@ -60,11 +63,12 @@ class MavlinkData {
   static LatLng? gotoTarget;
   static bool isObjectValid = false;
 
-  static Rpm? rpm;
+  // static Rpm? rpm;
   static EfiStatus? efiStatus;
+  // static EscTelemetry1To4? escTelemetry1To4;
 
-  static double? motor1Rpm;
-  static double? motor2Rpm;
+  // static double? motor1Rpm;
+  // static double? motor2Rpm;
 
   static final missionTransfer = ValueNotifier(
     const MissionTransferProgress.idle(),

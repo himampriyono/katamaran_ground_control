@@ -854,106 +854,111 @@ class MainSidePanel extends StatelessWidget {
   }
 
   Widget _buildEngineTelemetryWidget() {
-    return ValueListenableBuilder<BoatEngineTelemetry>(
-      valueListenable: MavlinkData.boatEngineTelemetry,
-      builder: (context, engine, child) {
-        final rpm1Text = engine.motor1Rpm?.toStringAsFixed(0) ?? "--";
-        final rpm2Text = engine.motor2Rpm?.toStringAsFixed(0) ?? "--";
-        double? normalizeFuel(double? value) {
-          if (value == null) return null;
-          return value.clamp(0.0, 100.0);
-        }
+    // return ValueListenableBuilder<BoatEngineTelemetry>(
+    //   valueListenable: MavlinkData.boatEngineTelemetry,
+    //   builder: (context, engine, child) {
 
-        Color fuelColor(double? value) {
-          final percent = normalizeFuel(value);
+    double? normalizeFuel(double? value) {
+      if (value == null) return null;
+      return value.clamp(0.0, 100.0);
+    }
 
-          if (percent == null) {
-            return Colors.red;
-          } else if (percent <= 30) {
-            return Colors.deepOrange;
-          } else if (percent <= 50) {
-            return Colors.orange;
-          } else if (percent <= 75) {
-            return Colors.yellow;
-          }
+    Color fuelColor(double? value) {
+      final percent = normalizeFuel(value);
 
-          return Colors.green;
-        }
+      if (percent == null) {
+        return Colors.red;
+      } else if (percent <= 20) {
+        return Colors.red;
+      } else if (percent <= 40) {
+        return Colors.deepOrange;
+      } else if (percent <= 60) {
+        return Colors.orange;
+      } else if (percent <= 80) {
+        return Colors.yellow;
+      }
 
-        Widget fuelItem(String title, double? rawValue) {
-          final percent = normalizeFuel(rawValue);
-          final color = fuelColor(rawValue);
+      return Colors.green;
+    }
 
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    Widget fuelItem(String title, double? rawValue) {
+      final percent = normalizeFuel(rawValue);
+      final color = fuelColor(rawValue);
+
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 14,
-                          letterSpacing: 1.2,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        percent == null
-                            ? "--"
-                            : "${percent.toStringAsFixed(0)}%",
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white38,
+                      fontSize: 14,
+                      letterSpacing: 1.2,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: percent == null ? 0 : percent / 100,
-                      minHeight: 7,
-                      backgroundColor: Colors.white12,
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                  Text(
+                    percent == null ? "--" : "${percent.toStringAsFixed(0)}%",
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
               ),
-            ),
-          );
-        }
-
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1A20),
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: Colors.white.withAlpha(30)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "SHIP ENGINE STATUS",
-                style: TextStyle(
-                  color: Colors.white38,
-                  fontSize: 14,
-                  letterSpacing: 2.0,
-                  fontWeight: FontWeight.bold,
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: percent == null ? 0 : percent / 100,
+                  minHeight: 7,
+                  backgroundColor: Colors.white12,
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
                 ),
               ),
-              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      );
+    }
 
-              // RPM
-              Row(
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A20),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.white.withAlpha(30)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            "SHIP ENGINE STATUS",
+            style: TextStyle(
+              color: Colors.white38,
+              fontSize: 14,
+              letterSpacing: 2.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // RPM
+          ValueListenableBuilder(
+            valueListenable: MavlinkData.rpm,
+            builder: (context, rpm, _) {
+              final rpm1Text = (rpm.rpm1).toStringAsFixed(0);
+              final rpm2Text = (rpm.rpm2).toStringAsFixed(0);
+
+              return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildDataItem(
@@ -969,23 +974,170 @@ class MainSidePanel extends StatelessWidget {
                     valueSize: 32,
                   ),
                 ],
-              ),
-
-              const SizedBox(height: 10),
-              Divider(height: 1, color: Colors.white.withAlpha(20)),
-              const SizedBox(height: 8),
-
-              Row(
-                children: [
-                  fuelItem("MOTOR 1 FUEL", engine.motor1FuelPercent),
-                  fuelItem("MOTOR 2 FUEL", engine.motor2FuelPercent),
-                ],
-              ),
-            ],
+              );
+            },
           ),
-          
-        );
-      },
+
+          const SizedBox(height: 10),
+          Divider(height: 1, color: Colors.white.withAlpha(20)),
+          const SizedBox(height: 8),
+
+          ValueListenableBuilder(
+            valueListenable: MavlinkData.escTelemetry1To4,
+            builder: (context, esc, _) {
+              debugPrint("Data esc: $esc");
+              return Row(
+                children: [
+                  fuelItem(
+                    "MOTOR 1 FUEL",
+                    (esc != null ? esc.rpm[2] * 0.1 : 0).toDouble(),
+                  ),
+                  fuelItem(
+                    "MOTOR 2 FUEL",
+                    (esc != null ? esc.rpm[3] * 0.1 : 0).toDouble(),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
     );
+    //   },
+    // );
   }
+  //   return ValueListenableBuilder<BoatEngineTelemetry>(
+  //     valueListenable: MavlinkData.boatEngineTelemetry,
+  //     builder: (context, engine, child) {
+  //       final rpm1Text = engine.motor1Rpm?.toStringAsFixed(0) ?? "--";
+  //       final rpm2Text = engine.motor2Rpm?.toStringAsFixed(0) ?? "--";
+  //       double? normalizeFuel(double? value) {
+  //         if (value == null) return null;
+  //         return value.clamp(0.0, 100.0);
+  //       }
+
+  //       Color fuelColor(double? value) {
+  //         final percent = normalizeFuel(value);
+
+  //         if (percent == null) {
+  //           return Colors.red;
+  //         } else if (percent <= 30) {
+  //           return Colors.deepOrange;
+  //         } else if (percent <= 50) {
+  //           return Colors.orange;
+  //         } else if (percent <= 75) {
+  //           return Colors.yellow;
+  //         }
+
+  //         return Colors.green;
+  //       }
+
+  //       Widget fuelItem(String title, double? rawValue) {
+  //         final percent = normalizeFuel(rawValue);
+  //         final color = fuelColor(rawValue);
+
+  //         return Expanded(
+  //           child: Padding(
+  //             padding: const EdgeInsets.symmetric(horizontal: 10),
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     Text(
+  //                       title,
+  //                       style: const TextStyle(
+  //                         color: Colors.white38,
+  //                         fontSize: 14,
+  //                         letterSpacing: 1.2,
+  //                         fontWeight: FontWeight.bold,
+  //                       ),
+  //                     ),
+  //                     Text(
+  //                       percent == null
+  //                           ? "--"
+  //                           : "${percent.toStringAsFixed(0)}%",
+  //                       style: TextStyle(
+  //                         color: color,
+  //                         fontSize: 32,
+  //                         fontWeight: FontWeight.bold,
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 const SizedBox(height: 6),
+  //                 ClipRRect(
+  //                   borderRadius: BorderRadius.circular(4),
+  //                   child: LinearProgressIndicator(
+  //                     value: percent == null ? 0 : percent / 100,
+  //                     minHeight: 7,
+  //                     backgroundColor: Colors.white12,
+  //                     valueColor: AlwaysStoppedAnimation<Color>(color),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         );
+  //       }
+
+  //       return Container(
+  //         width: double.infinity,
+  //         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+  //         decoration: BoxDecoration(
+  //           color: const Color(0xFF1A1A20),
+  //           borderRadius: BorderRadius.circular(4),
+  //           border: Border.all(color: Colors.white.withAlpha(30)),
+  //         ),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             const Text(
+  //               "SHIP ENGINE STATUS",
+  //               style: TextStyle(
+  //                 color: Colors.white38,
+  //                 fontSize: 14,
+  //                 letterSpacing: 2.0,
+  //                 fontWeight: FontWeight.bold,
+  //               ),
+  //             ),
+  //             const SizedBox(height: 8),
+
+  //             // RPM
+  //             Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //               children: [
+  //                 _buildDataItem(
+  //                   title: "RPM 1",
+  //                   value: rpm1Text,
+  //                   valueColor: Colors.cyanAccent,
+  //                   valueSize: 32,
+  //                 ),
+  //                 _buildDataItem(
+  //                   title: "RPM 2",
+  //                   value: rpm2Text,
+  //                   valueColor: Colors.cyanAccent,
+  //                   valueSize: 32,
+  //                 ),
+  //               ],
+  //             ),
+
+  //             const SizedBox(height: 10),
+  //             Divider(height: 1, color: Colors.white.withAlpha(20)),
+  //             const SizedBox(height: 8),
+
+  //             Row(
+  //               children: [
+  //                 fuelItem("MOTOR 1 FUEL", engine.motor1FuelPercent),
+  //                 fuelItem("MOTOR 2 FUEL", engine.motor2FuelPercent),
+  //               ],
+  //             ),
+  //           ],
+  //         ),
+
+  //       );
+  //     },
+  //   );
+  // }
 }

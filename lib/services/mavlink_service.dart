@@ -277,10 +277,23 @@ class MavlinkService {
       MavlinkData.lastMissionCurrent = message;
       NotifierService.triggerMissionUpdate();
     } else if (message is Rpm) {
-      MavlinkData.rpm = message;
-      MavlinkData.motor1Rpm = message.rpm1.toDouble();
-      MavlinkData.motor2Rpm = message.rpm2.toDouble();
-      NotifierService.triggerStatusUpdate();
+      MavlinkData.rpm.value = message;
+      // MavlinkData.motor1Rpm = message.rpm1.toDouble();
+      // MavlinkData.motor2Rpm = message.rpm2.toDouble();
+      // NotifierService.triggerRpmUpdate();
+    } else if (message is EscTelemetry1To4) {
+      MavlinkData.escTelemetry1To4.value = message;
+      // NotifierService.triggerEscUpdate();
+      // debugPrint("Data esc telem: $message");
+      // debugPrint(
+      //   'ESC Telemetry 1-4:\n'
+      //   'Temperature: ${message.temperature} °C\n'
+      //   'Voltage (raw cV): ${message.voltage}\n'
+      //   'Current (raw cA): ${message.current}\n'
+      //   'Total Current: ${message.totalcurrent} mAh\n'
+      //   'RPM (eRPM): ${message.rpm}\n'
+      //   'Packet Count: ${message.count}',
+      // );
     } else if (message is NamedValueInt) {
       _handleNamedValueInt(message);
     } else if (message is NamedValueFloat) {
@@ -468,6 +481,8 @@ class MavlinkService {
     setMessageRate(messageId: 226, rateHz: 2);
     setMessageRate(messageId: 225, rateHz: 2);
     setMessageRate(messageId: 11039, rateHz: 1);
+    // setMessageRate(messageId: MavMessages.rawRpm, rateHz: 2);
+    // setMessageRate(messageId: MavMessages.escTelemetry1To4, rateHz: 2);
   }
 
   static void sendGcsHeartbeat() {
