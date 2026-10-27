@@ -22,8 +22,8 @@ class ActionButton extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        height: 24,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
           border: Border.all(color: color, width: 0.9),
@@ -33,7 +33,7 @@ class ActionButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 16, color: buttonColor),
+              Icon(icon, size: 18, color: buttonColor),
               const SizedBox(width: 8),
             ],
             Text(
@@ -41,7 +41,7 @@ class ActionButton extends StatelessWidget {
               style: TextStyle(
                 color: buttonColor,
                 fontWeight: FontWeight.w600,
-                fontSize: 13,
+                fontSize: 18,
               ),
             ),
           ],

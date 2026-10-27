@@ -21,10 +21,10 @@ class ChannelMonitorTile extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 42,
+            width: 54,
             child: Text(
               "CH${channel.toString().padLeft(2, '0')}",
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
           ),
 
@@ -99,11 +99,11 @@ class ChannelMonitorTile extends StatelessWidget {
           ),
 
           SizedBox(
-            width: 42,
+            width: 64,
             child: Text(
               "$value",
               textAlign: TextAlign.end,
-              style: const TextStyle(fontSize: 11, color: Colors.white70),
+              style: const TextStyle(fontSize: 18, color: Colors.white70),
             ),
           ),
         ],

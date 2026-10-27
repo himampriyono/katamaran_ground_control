@@ -81,10 +81,10 @@ class _MessageWindowContent extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'MAVLink Messages',
+                      'MAVLink MESSAGES',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 15,
+                        fontSize: 18,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 2,
                       ),
@@ -154,18 +154,20 @@ class _MessageWindowContent extends StatelessWidget {
                   final int severity = message.severity;
                   final Color color = MessageWindow._severityColor(severity);
                   final String text = MessageWindow._decodeText(message);
+                  final String timestamp =
+                      "${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}";
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 4,
-                      vertical: 6,
+                      vertical: 2,
                     ),
                     child: SelectableText(
-                      text,
+                      "$timestamp -> $text",
                       style: TextStyle(
                         color: color,
-                        fontSize: 12,
-                        height: 1.5,
+                        fontSize: 16,
+                        height: 1,
                         fontFamily: 'Courier',
                       ),
                     ),

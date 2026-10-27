@@ -100,8 +100,8 @@ class _JoystickReverseWindowState extends State<JoystickReverseWindow> {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          width: 760,
-          height: 500,
+          width: 820,
+          height: 660,
           decoration: BoxDecoration(
             color: const Color(0xFF202020),
             border: Border.all(color: Colors.white24),
@@ -166,12 +166,12 @@ class _JoystickReverseWindowState extends State<JoystickReverseWindow> {
               children: [
                 Text(
                   "Joystick Channel Reverse",
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 SizedBox(height: 2),
                 Text(
                   "Configure input direction for each channel",
-                  style: TextStyle(fontSize: 9, color: Colors.white38),
+                  style: TextStyle(fontSize: 13, color: Colors.white38),
                 ),
               ],
             ),
@@ -224,7 +224,7 @@ class _JoystickReverseWindowState extends State<JoystickReverseWindow> {
                 "$reversedCount",
                 style: TextStyle(
                   color: reversedCount > 0 ? Colors.cyan : Colors.white38,
-                  fontSize: 12,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -242,7 +242,7 @@ class _JoystickReverseWindowState extends State<JoystickReverseWindow> {
                   "REVERSED CHANNELS",
                   style: TextStyle(
                     color: Colors.white54,
-                    fontSize: 9,
+                    fontSize: 18,
                     letterSpacing: 1.0,
                     fontWeight: FontWeight.w600,
                   ),
@@ -250,7 +250,7 @@ class _JoystickReverseWindowState extends State<JoystickReverseWindow> {
                 SizedBox(height: 3),
                 Text(
                   "Selected channels invert their input direction.",
-                  style: TextStyle(color: Colors.white30, fontSize: 9),
+                  style: TextStyle(color: Colors.white30, fontSize: 16),
                 ),
               ],
             ),
@@ -267,7 +267,7 @@ class _JoystickReverseWindowState extends State<JoystickReverseWindow> {
               "RESET ALL",
               style: TextStyle(
                 color: Colors.orangeAccent,
-                fontSize: 10,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -335,7 +335,7 @@ class _JoystickReverseWindowState extends State<JoystickReverseWindow> {
 
     return Container(
       key: key,
-      height: 44,
+      height: 50,
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
         color: reversed ? Colors.cyan.withAlpha(18) : const Color(0xFF292929),
@@ -360,7 +360,7 @@ class _JoystickReverseWindowState extends State<JoystickReverseWindow> {
                 "$channel",
                 style: TextStyle(
                   color: reversed ? Colors.cyan : Colors.white54,
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -378,7 +378,7 @@ class _JoystickReverseWindowState extends State<JoystickReverseWindow> {
                   "CH$channel",
                   style: TextStyle(
                     color: reversed ? Colors.cyan : Colors.white70,
-                    fontSize: 11,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -388,7 +388,7 @@ class _JoystickReverseWindowState extends State<JoystickReverseWindow> {
                     color: reversed
                         ? Colors.cyan.withAlpha(180)
                         : Colors.white30,
-                    fontSize: 8,
+                    fontSize: 16,
                     letterSpacing: 0.8,
                   ),
                 ),

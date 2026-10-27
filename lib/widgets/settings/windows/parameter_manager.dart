@@ -29,7 +29,7 @@ class _ParameterManagerState extends State<ParameterManager> {
     return Dialog(
       backgroundColor: const Color(0xFF1B1D22),
       child: SizedBox(
-        width: 700,
+        width: 900,
         height: 600,
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -40,7 +40,7 @@ class _ParameterManagerState extends State<ParameterManager> {
                 children: [
                   const Text(
                     "Parameter Manager",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   Spacer(),
                   IconButton(
@@ -54,7 +54,7 @@ class _ParameterManagerState extends State<ParameterManager> {
               const SizedBox(height: 4),
               const Text(
                 "Read and configure ship parameters.",
-                style: TextStyle(color: Colors.white54),
+                style: TextStyle(color: Colors.white54, fontSize: 16),
               ),
               SizedBox(height: 5),
               if (_message != null)
@@ -87,7 +87,7 @@ class _ParameterManagerState extends State<ParameterManager> {
                           hintText: "Search Parameters...",
                           hintStyle: const TextStyle(
                             color: Colors.white38,
-                            fontSize: 13,
+                            fontSize: 18,
                           ),
                           prefixIcon: Icon(Icons.search, size: 18),
                           suffixIcon: _searchController.text.isEmpty

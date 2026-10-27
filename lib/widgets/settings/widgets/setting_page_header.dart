@@ -26,7 +26,7 @@ class SettingPageHeader extends StatelessWidget{
         Text(
           subtitle,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 18,
             color: Colors.white.withAlpha(130)
           ),
         ),

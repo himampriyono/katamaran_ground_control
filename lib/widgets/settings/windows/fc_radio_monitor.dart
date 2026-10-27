@@ -11,8 +11,8 @@ class FcRadioMonitor extends StatelessWidget {
     return Dialog(
       backgroundColor: const Color(0xFF1B1D22),
       child: SizedBox(
-        width: 520,
-        height: 570,
+        width: 720,
+        height: 620,
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(

@@ -112,7 +112,7 @@ class _GeneralPageState extends State<GeneralPage> {
                     SettingsTile(
                       title: "Speed Unit",
                       trailing: SizedBox(
-                        width: 180,
+                        width: 250,
                         child: ValueListenableBuilder(
                           valueListenable: AppData.selectedSpeedUnit,
                           builder: (context, value, child) {
@@ -155,7 +155,7 @@ class _GeneralPageState extends State<GeneralPage> {
                     SettingsTile(
                       title: "Position Unit",
                       trailing: SizedBox(
-                        width: 180,
+                        width: 250,
                         child: ValueListenableBuilder(
                           valueListenable: AppData.selectedPosUnit,
                           builder: (context, value, child) {
@@ -189,6 +189,20 @@ class _GeneralPageState extends State<GeneralPage> {
                                     },
                                   ),
                                 ),
+                                Expanded(
+                                  child: SegmentButton(
+                                    title: "DMS",
+                                    isSelected: value == PositionUnit.dms,
+                                    onTap: () {
+                                      AppData.selectedPosUnit.value =
+                                          PositionUnit.dms;
+                                      SettingsService.setPositionUnit(
+                                        PositionUnit.dms,
+                                      );
+                                      NotifierService.triggerAttitudeUpdate();
+                                    },
+                                  ),
+                                ),
                               ],
                             );
                           },
@@ -206,7 +220,7 @@ class _GeneralPageState extends State<GeneralPage> {
                     SettingsTile(
                       title: "Map Type",
                       trailing: SizedBox(
-                        width: 180,
+                        width: 250,
                         child: ValueListenableBuilder(
                           valueListenable: AppData.selectedMapType,
                           builder: (context, value, child) {

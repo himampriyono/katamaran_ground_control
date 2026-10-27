@@ -70,7 +70,7 @@ class _SystemCheckContentState extends State<_SystemCheckContent> {
             children: [
               const SizedBox(),
               const Text(
-                'SYSTEM SELF CHECK',
+                'SYSTEM CHECK',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               IconButton(
@@ -167,13 +167,15 @@ class _SystemCheckContentState extends State<_SystemCheckContent> {
                     ),
                     _systemCheckItem(
                       'Engine 1',
-                      "${MavlinkData.boatEngineTelemetry.value.motor1Rpm!.toStringAsFixed(0)} RPM",
-                      (MavlinkData.boatEngineTelemetry.value.motor1Rpm!) > 0,
+                      "${(MavlinkData.boatEngineTelemetry.value.motor1Rpm ?? 0).toStringAsFixed(0)} RPM",
+                      (MavlinkData.boatEngineTelemetry.value.motor1Rpm ?? 0) >
+                          0,
                     ),
                     _systemCheckItem(
                       'Engine 2',
-                      "${MavlinkData.boatEngineTelemetry.value.motor2Rpm!.toStringAsFixed(0)} RPM",
-                      (MavlinkData.boatEngineTelemetry.value.motor2Rpm!) > 0,
+                      "${(MavlinkData.boatEngineTelemetry.value.motor2Rpm ?? 0).toStringAsFixed(0)} RPM",
+                      (MavlinkData.boatEngineTelemetry.value.motor2Rpm ?? 0) >
+                          0,
                     ),
                   ],
                 ),
@@ -190,16 +192,24 @@ Widget _systemCheckItem(String varName, Object? value, bool isPassed) {
   return Container(
     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
     decoration: BoxDecoration(
-      border: Border.all(
-        color: isPassed ? Colors.green : Colors.red,
-        width: 0.5,
+      border: Border(
+        bottom: BorderSide(
+          // color: isPassed ? Colors.green : Colors.red,
+          color: Colors.grey,
+          width: 0.5,
+        ),
       ),
     ),
     child: Row(
       children: [
         Expanded(
           flex: 4,
-          child: Text(varName, maxLines: 1, overflow: TextOverflow.ellipsis),
+          child: Text(
+            varName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
         Expanded(
           flex: 3,
@@ -212,13 +222,17 @@ Widget _systemCheckItem(String varName, Object? value, bool isPassed) {
         SizedBox(
           width: 75,
           child: Center(
-            child: Text(
-              isPassed ? 'PASS' : 'FAIL',
-              style: TextStyle(
-                color: isPassed ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Icon(
+              isPassed ? Icons.check : Icons.close,
+              color: isPassed ? Colors.green : Colors.red,
             ),
+            // child: Text(
+            //   isPassed ? 'PASS' : 'FAIL',
+            //   style: TextStyle(
+            //     color: isPassed ? Colors.green : Colors.red,
+            //     fontWeight: FontWeight.bold,
+            //   ),
+            // ),
           ),
         ),
       ],

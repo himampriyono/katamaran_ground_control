@@ -142,8 +142,8 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
           return AlertDialog(
             title: const Text('TORPEDO MENU', textAlign: TextAlign.center,),
             content: SizedBox(
-              width: 420,
-              height: 420,
+              width: 720,
+              height: 640,
               child: Column(
                 children: [
                   const Divider(),
@@ -274,12 +274,12 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
               children: [
                 Text(
                   'Auto Set Heading To Target',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                 ),
                 SizedBox(height: 2),
                 Text(
                   'Calculate heading to locked target automatically',
-                  style: TextStyle(fontSize: 12),
+                  style: TextStyle(fontSize: 14),
                 ),
               ],
             ),
@@ -308,6 +308,7 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
     return TextField(
       controller: controller,
       enabled: enabled,
+      style: TextStyle(fontSize: 16),
       keyboardType: TextInputType.numberWithOptions(
         decimal: decimal,
         signed: signed,
@@ -333,15 +334,14 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
       children: [
         const Text(
           'Manual Gripper Control',
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
-        const SizedBox(height: 6),
-        const SizedBox(height: 16),
+        const SizedBox(height: 32),
 
         for (final torpedoId in [21, 22, 23, 24])
           Container(
             margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
@@ -356,12 +356,8 @@ class _TorpedoWindowState extends State<TorpedoWindow> {
                     children: [
                       Text(
                         'GRIPPER ${torpedoId - 20}',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                       ),
-                      // Text(
-                      //   'ID $torpedoId',
-                      //   style: const TextStyle(fontSize: 12),
-                      // ),
                     ],
                   ),
                 ),

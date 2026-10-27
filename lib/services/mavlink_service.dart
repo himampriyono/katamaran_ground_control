@@ -765,7 +765,7 @@ class MavlinkService {
       69,
       68,
       79,
-    ]; // translate TORPEDO ke ASCII *ndak lali
+    ]; // translate "TORPEDO" ke ASCII *ndak lali
 
     if (message.name.length < torpedoName.length) {
       return;
@@ -822,6 +822,10 @@ class MavlinkService {
       _checkPendingtorpedoLaunches(MavlinkData.torpedoStatuses);
 
       if (MavlinkData.torpedoStatuses[i] != newStatus) {
+        if (MavlinkData.torpedoStatuses[i] == TorpedoStatus.ready &&
+            newStatus == TorpedoStatus.released) {
+          Snackbar.show("TORPEDO ${20 + i} LAUNCHED");
+        }
         MavlinkData.torpedoStatuses[i] = newStatus;
         changed = true;
       }

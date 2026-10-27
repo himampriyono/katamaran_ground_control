@@ -35,14 +35,15 @@ class ParameterTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     parameter.name,
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                 ),
                 SizedBox(
-                  width: 80,
+                  width: 150,
                   child: Text(
                     parameter.value.toString(),
                     textAlign: TextAlign.end,
+                    style: TextStyle(fontSize: 18),
                   ),
                 ),
                 SizedBox(width: 12),

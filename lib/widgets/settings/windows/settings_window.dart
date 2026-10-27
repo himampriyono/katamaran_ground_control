@@ -26,8 +26,8 @@ class _SettingWindowsState extends State<SettingsWindow> {
         color: Colors.black54,
         child: Center(
           child: Container(
-            width: 800,
-            height: 550,
+            width: 1000,
+            height: 750,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
@@ -58,7 +58,7 @@ class _SettingWindowsState extends State<SettingsWindow> {
                       const Text(
                         "Settings",
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 24,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -72,7 +72,7 @@ class _SettingWindowsState extends State<SettingsWindow> {
                           padding: EdgeInsets.all(6),
                           child: Icon(
                             Icons.close,
-                            size: 18,
+                            size: 24,
                             color: Colors.redAccent,
                           ),
                         ),
@@ -183,7 +183,7 @@ class _SettingWindowsState extends State<SettingsWindow> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOut,
-            height: 44,
+            height: 64,
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
               color: selected
@@ -200,7 +200,7 @@ class _SettingWindowsState extends State<SettingsWindow> {
               children: [
                 Icon(
                   icon,
-                  size: 18,
+                  size: 24,
                   color: selected ? const Color(0xFF64B5F6) : Colors.white60,
                 ),
                 const SizedBox(width: 12),
@@ -209,6 +209,7 @@ class _SettingWindowsState extends State<SettingsWindow> {
                   style: TextStyle(
                     color: selected ? Colors.white : Colors.white70,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    fontSize: 18
                   ),
                 ),
               ],

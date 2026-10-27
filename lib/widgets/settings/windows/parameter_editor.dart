@@ -64,7 +64,7 @@ class _ParameterManagerState extends State<ParameterEditor> {
                 child: Text(
                   widget.parameter.name,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
                 ),
               ),
               const SizedBox(height: 8),

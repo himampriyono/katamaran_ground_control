@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:dart_mavlink/types.dart';
+import 'package:flutter/material.dart';
 
 class AppUtils {
   static (String zone, double easting, double northing) latLonToUtm(
@@ -55,6 +56,70 @@ class AppUtils {
     if (lat < 0) northing += 10000000;
 
     return ("$zoneNum$letter", easting, northing);
+  }
+
+  static String latLonToDms(double value, {required bool isLatitude}) {
+    final hemisphere = isLatitude
+        ? (value < 0 ? 'LS' : 'LU')
+        : (value < 0 ? 'BB' : 'BT');
+
+    final totalHundredths = (value.abs() * 360000).round();
+
+    final degrees = totalHundredths ~/ 360000;
+    final remaining = totalHundredths % 360000;
+    final minutes = remaining ~/ 6000;
+    final secondsHundredths = remaining % 6000;
+
+    final seconds = (secondsHundredths / 100)
+        .toStringAsFixed(2)
+        .padLeft(5, '0');
+
+    final degreeText = degrees.toString().padLeft(isLatitude ? 2 : 3, '0');
+
+    return '$degreeText° '
+        '${minutes.toString().padLeft(2, '0')}′ '
+        '$seconds′′ $hemisphere';
+  }
+
+  static (String latitude, String longitude) latToToDms(
+    double lat,
+    double lon,
+  ) {
+    if (!lat.isFinite || lat < -90 || lat > 90) {
+      throw ArgumentError("Invalid Lat");
+    }
+
+    if (!lon.isFinite || lon < -180 || lon > 180) {
+      throw ArgumentError("Invalid lon");
+    }
+
+    String convertToDms(double value, {required bool isLatitude}) {
+      final hemisphere = isLatitude
+          ? (value < 0 ? 'LS' : 'LU')
+          : (value < 0 ? 'BB' : 'BT');
+
+      final totalHundredths = (value.abs() * 360000).round();
+
+      final degrees = totalHundredths ~/ 360000;
+      final remaining = totalHundredths % 360000;
+      final minutes = remaining ~/ 6000;
+      final secondsHundredths = remaining % 6000;
+
+      final seconds = (secondsHundredths / 100)
+          .toStringAsFixed(2)
+          .padLeft(5, '0');
+
+      final degreeText = degrees.toString().padLeft(isLatitude ? 2 : 3, '0');
+
+      return '$degreeText° '
+          '${minutes.toString().padLeft(2, '0')}′ '
+          '$seconds′′ $hemisphere';
+    }
+
+    return (
+      convertToDms(lat, isLatitude: true),
+      convertToDms(lon, isLatitude: false),
+    );
   }
 
   static double calculateDistance(

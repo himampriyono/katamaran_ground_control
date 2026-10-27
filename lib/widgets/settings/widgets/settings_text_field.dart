@@ -24,12 +24,12 @@ class SettingsTextField extends StatelessWidget {
         keyboardType: keyboardType,
         onChanged: onChanged,
         style: const TextStyle(
-          fontSize: 13,
+          fontSize: 18,
         ),
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: const TextStyle(
-            fontSize: 13,
+            fontSize: 18,
             color: Colors.white38,
           ),
           contentPadding: const EdgeInsets.symmetric(

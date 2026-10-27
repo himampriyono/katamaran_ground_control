@@ -15,8 +15,10 @@ class MainSidePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenX = MediaQuery.of(context).size.width;
+    double screenY = MediaQuery.of(context).size.height;
     return Container(
-      width: 320,
+      width: 0.4 * screenX,
       padding: const EdgeInsets.all(16.0),
       decoration: const BoxDecoration(
         color: Color(0xFF141419),
@@ -89,7 +91,7 @@ class MainSidePanel extends StatelessWidget {
               MavlinkData.isArmed ? "READY" : "NOT READY",
               style: TextStyle(
                 color: MavlinkData.isArmed ? Colors.green : Colors.red,
-                fontSize: 12,
+                fontSize: 18,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 4.0,
               ),
@@ -105,7 +107,7 @@ class MainSidePanel extends StatelessWidget {
       title,
       style: const TextStyle(
         color: Colors.white,
-        fontSize: 12,
+        fontSize: 18,
         fontWeight: FontWeight.w900,
         letterSpacing: 2.0,
       ),
@@ -135,7 +137,7 @@ class MainSidePanel extends StatelessWidget {
                       "MODE:",
                       style: TextStyle(
                         color: Colors.yellow,
-                        fontSize: 14,
+                        fontSize: 20,
                         // fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -169,7 +171,7 @@ class MainSidePanel extends StatelessWidget {
                         return availableModes.map((int mode) {
                           return PopupMenuItem<int>(
                             value: mode,
-                            height: 32,
+                            height: 34,
                             child: Text(
                               _getModeName(mode),
                               style: TextStyle(
@@ -201,7 +203,7 @@ class MainSidePanel extends StatelessWidget {
                           modeName,
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 14,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -266,8 +268,8 @@ class MainSidePanel extends StatelessWidget {
                 alignment: Alignment.center,
                 children: [
                   SizedBox(
-                    width: 400,
-                    height: 400,
+                    width: 600,
+                    height: 600,
                     child: Transform.rotate(
                       angle: -roll,
                       child: Transform.translate(
@@ -294,7 +296,6 @@ class MainSidePanel extends StatelessWidget {
                     ),
                   ),
 
-                  // 2. CROSSHAIR TENGAH (STATIS)
                   const Icon(
                     Icons.add,
                     color: Colors.deepOrangeAccent,
@@ -409,34 +410,24 @@ class MainSidePanel extends StatelessWidget {
                     value: "${headingDeg.toStringAsFixed(1)}°",
                   ),
                   _buildDataItem(
-                    title: "BATTERY",
-                    value:
-                        "${((MavlinkData.lastSysStatus?.voltageBattery ?? 0) * 0.001).toStringAsFixed(1)}V",
-                  ),
-                ],
-              ),
-              const SizedBox(height: 3),
-              _buildDataDivider(),
-              const SizedBox(height: 3),
-              Row(
-                spacing: 4,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _buildDataItem(
                     title: "SPEED",
                     value: (AppData.selectedSpeedUnit.value == SpeedUnit.metric)
                         ? "${(MavlinkData.lastVfrHud?.groundspeed ?? 0).toStringAsFixed(1)} m/s"
                         : "${((MavlinkData.lastVfrHud?.groundspeed ?? 0) * 1.94384).toStringAsFixed(1)} kn",
                   ),
-                  _buildDataItem(
-                    title: "HOME",
-                    value: (AppData.selectedSpeedUnit.value == SpeedUnit.metric)
-                        ? "${rawDistToHome.toStringAsFixed(0)} m"
-                        : "${(rawDistToHome / 1852).toStringAsFixed(2)} NM",
+                  ValueListenableBuilder(
+                    valueListenable: NotifierService.connectionTrigger,
+                    builder: (_, connection, _) {
+                      return _buildDataItem(
+                        title: "FAILSAFE Status",
+                        value: MavlinkData.isMavlinkConnected ? "OFF" : "ON",
+                      );
+                    },
                   ),
                 ],
               ),
+              const SizedBox(height: 3),
+              _buildDataDivider(),
               const SizedBox(height: 3),
               _buildDataDivider(),
               const SizedBox(height: 3),
@@ -459,17 +450,27 @@ class MainSidePanel extends StatelessWidget {
                               ? "${AppUtils.calculateDistance(MavlinkData.lastGlobalPositionInt!.lat / 1e7, MavlinkData.lastGlobalPositionInt!.lon / 1e7, MavlinkData.missionItems[MavlinkData.lastMissionCurrent!.seq - 1].x, MavlinkData.missionItems[MavlinkData.lastMissionCurrent!.seq - 1].y).toStringAsFixed(0)} m"
                               : "--"),
                   ),
+                  _buildDataItem(
+                    title: "HOME",
+                    value: (AppData.selectedSpeedUnit.value == SpeedUnit.metric)
+                        ? "${rawDistToHome.toStringAsFixed(0)} m"
+                        : "${(rawDistToHome / 1852).toStringAsFixed(2)} NM",
+                  ),
                 ],
               ),
               const SizedBox(height: 3),
-              const Divider(
-                thickness: 0.05,
-                height: 0.5,
-                indent: 12,
-                endIndent: 12,
-                color: Colors.white,
-              ),
-              const SizedBox(height: 5),
+              _buildDataDivider(),
+              const SizedBox(height: 6),
+              _buildDataDivider(),
+              const SizedBox(height: 3),
+              // const Divider(
+              //   thickness: 0.05,
+              //   height: 0.5,
+              //   indent: 12,
+              //   endIndent: 12,
+              //   color: Colors.white,
+              // ),
+              // const SizedBox(height: 5),
               Column(
                 spacing: 4,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -483,11 +484,18 @@ class MainSidePanel extends StatelessWidget {
                       children: [
                         Text(
                           (AppData.selectedPosUnit.value == PositionUnit.utm)
-                              ? "${utmZone}, ${(utmX).toStringAsFixed(2)}, ${(utmY).toStringAsFixed(2)}"
-                              : "${(MavlinkData.lastGlobalPositionInt?.lat ?? 0) / 1e7}, ${(MavlinkData.lastGlobalPositionInt?.lon ?? 0) / 1e7}",
-                          style: const TextStyle(
+                              ? "$utmZone, ${(utmX).toStringAsFixed(2)}, ${(utmY).toStringAsFixed(2)}"
+                              : (AppData.selectedPosUnit.value ==
+                                        PositionUnit.dms
+                                    ? "${AppUtils.latLonToDms((MavlinkData.lastGlobalPositionInt?.lat ?? 0) / 1e7, isLatitude: true)}, ${AppUtils.latLonToDms((MavlinkData.lastGlobalPositionInt?.lon ?? 0) / 1e7, isLatitude: false)}"
+                                    : "${(MavlinkData.lastGlobalPositionInt?.lat ?? 0) / 1e7}, ${(MavlinkData.lastGlobalPositionInt?.lon ?? 0) / 1e7}"),
+                          style: TextStyle(
                             color: Colors.orange,
-                            fontSize: 14,
+                            fontSize:
+                                AppData.selectedPosUnit.value ==
+                                    PositionUnit.dms
+                                ? 28
+                                : 32,
                             // fontWeight: FontWeight.w900,
                             fontFamily: 'Courier',
                           ),
@@ -499,7 +507,7 @@ class MainSidePanel extends StatelessWidget {
                     "CURRENT SHIP POSITION",
                     style: const TextStyle(
                       color: Colors.white38,
-                      fontSize: 10,
+                      fontSize: 14,
                       letterSpacing: 2.0,
                     ),
                   ),
@@ -534,11 +542,11 @@ class MainSidePanel extends StatelessWidget {
                                     ? "--"
                                     : ((AppData.selectedPosUnit.value ==
                                               PositionUnit.utm)
-                                          ? "${oUtmZone}, ${(oUtmX).toStringAsFixed(2)}, ${(oUtmY).toStringAsFixed(2)}"
+                                          ? "$oUtmZone, ${(oUtmX).toStringAsFixed(2)}, ${(oUtmY).toStringAsFixed(2)}"
                                           : "${(AppData.objectCoord.value.latitude).toStringAsFixed(7)}, ${(AppData.objectCoord.value.longitude).toStringAsFixed(7)}"),
                                 style: const TextStyle(
                                   color: Colors.deepOrange,
-                                  fontSize: 14,
+                                  fontSize: 32,
                                   // fontWeight: FontWeight.w900,
                                   fontFamily: 'Courier',
                                 ),
@@ -552,7 +560,7 @@ class MainSidePanel extends StatelessWidget {
                       "OBJECT POSITION ESTIMATE",
                       style: const TextStyle(
                         color: Colors.white38,
-                        fontSize: 10,
+                        fontSize: 14,
                         letterSpacing: 2.0,
                       ),
                     ),
@@ -598,48 +606,53 @@ class MainSidePanel extends StatelessWidget {
           ),
         ),
 
-        IconButton(
-          icon: const Icon(
-            Icons.health_and_safety_outlined,
-            color: Colors.white30,
-            size: 18,
-          ),
-          tooltip: 'System Check',
-          constraints: const BoxConstraints(),
-          padding: EdgeInsets.zero,
-          onPressed: () {
-            showDialog<void>(
-              context: context,
-              builder: (_) => const SystemCheckWindow(),
-            );
-          },
-        ),
-
-        IconButton(
-          icon: const Icon(
-            Icons.article_outlined,
-            color: Colors.white30,
-            size: 18,
-          ),
-          tooltip: 'Open MAVLink Messages Window',
-          constraints: const BoxConstraints(),
-          padding: EdgeInsets.zero,
-          onPressed: () {
-            showDialog<void>(
-              context: context,
-              builder: (_) => const MessageWindow(),
-            );
-          },
-        ),
-
-        IconButton(
-          icon: const Icon(Icons.settings, color: Colors.white30, size: 18),
-          tooltip: "GCS Menu",
-          constraints: const BoxConstraints(),
-          padding: EdgeInsets.zero,
-          onPressed: () {
-            AppData.showSettings.value = true;
-          },
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(
+                Icons.health_and_safety_outlined,
+                color: Colors.white30,
+                size: 28,
+              ),
+              tooltip: 'System Check',
+              constraints: const BoxConstraints(),
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => const SystemCheckWindow(),
+                );
+              },
+            ),
+            SizedBox(width: 24),
+            IconButton(
+              icon: const Icon(
+                Icons.article_outlined,
+                color: Colors.white30,
+                size: 28,
+              ),
+              tooltip: 'Open MAVLink Messages Window',
+              constraints: const BoxConstraints(),
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => const MessageWindow(),
+                );
+              },
+            ),
+            SizedBox(width: 24),
+            IconButton(
+              icon: const Icon(Icons.settings, color: Colors.white30, size: 28),
+              tooltip: "GCS Menu",
+              constraints: const BoxConstraints(),
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                AppData.showSettings.value = true;
+              },
+            ),
+            SizedBox(width: 24),
+          ],
         ),
       ],
     );
@@ -649,7 +662,7 @@ class MainSidePanel extends StatelessWidget {
     required String title,
     required String value,
     Color valueColor = Colors.orange,
-    double valueSize = 18,
+    double valueSize = 32,
   }) {
     return Expanded(
       child: Column(
@@ -672,8 +685,8 @@ class MainSidePanel extends StatelessWidget {
             title,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Colors.white38,
-              fontSize: 9,
+              color: Colors.white,
+              fontSize: 14,
               letterSpacing: 1.5,
             ),
           ),
@@ -761,11 +774,11 @@ class MainSidePanel extends StatelessWidget {
                 builder: (context) => const TorpedoWindow(),
               );
             },
-            icon: const Icon(Icons.settings, size: 16),
+            // icon: const Icon(Icons.menu, size: 16),
             label: const Text(
-              "ADJUST TORPEDO MISSION",
+              "TORPEDO OPTION",
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1,
               ),
@@ -819,7 +832,7 @@ class MainSidePanel extends StatelessWidget {
                   "T-$unitNumber",
                   style: const TextStyle(
                     color: Colors.white70,
-                    fontSize: 9,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -828,7 +841,7 @@ class MainSidePanel extends StatelessWidget {
                   statusText,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 10,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -854,14 +867,15 @@ class MainSidePanel extends StatelessWidget {
         Color fuelColor(double? value) {
           final percent = normalizeFuel(value);
 
-          if (percent == null)
+          if (percent == null) {
             return Colors.red;
-          else if (percent <= 30)
+          } else if (percent <= 30) {
             return Colors.deepOrange;
-          else if (percent <= 50)
+          } else if (percent <= 50) {
             return Colors.orange;
-          else if (percent <= 75)
+          } else if (percent <= 75) {
             return Colors.yellow;
+          }
 
           return Colors.green;
         }
@@ -883,7 +897,7 @@ class MainSidePanel extends StatelessWidget {
                         title,
                         style: const TextStyle(
                           color: Colors.white38,
-                          fontSize: 9,
+                          fontSize: 14,
                           letterSpacing: 1.2,
                           fontWeight: FontWeight.bold,
                         ),
@@ -894,7 +908,7 @@ class MainSidePanel extends StatelessWidget {
                             : "${percent.toStringAsFixed(0)}%",
                         style: TextStyle(
                           color: color,
-                          fontSize: 13,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -931,7 +945,7 @@ class MainSidePanel extends StatelessWidget {
                 "SHIP ENGINE STATUS",
                 style: TextStyle(
                   color: Colors.white38,
-                  fontSize: 9,
+                  fontSize: 14,
                   letterSpacing: 2.0,
                   fontWeight: FontWeight.bold,
                 ),
@@ -946,13 +960,13 @@ class MainSidePanel extends StatelessWidget {
                     title: "RPM 1",
                     value: rpm1Text,
                     valueColor: Colors.cyanAccent,
-                    valueSize: 14,
+                    valueSize: 32,
                   ),
                   _buildDataItem(
                     title: "RPM 2",
                     value: rpm2Text,
                     valueColor: Colors.cyanAccent,
-                    valueSize: 14,
+                    valueSize: 32,
                   ),
                 ],
               ),

@@ -3,7 +3,7 @@ import 'package:latlong2/latlong.dart';
 
 enum SpeedUnit { metric, naval }
 
-enum PositionUnit { utm, latlon }
+enum PositionUnit { utm, latlon, dms }
 
 enum JoystickStatus { connected, connecting, disconnected }
 

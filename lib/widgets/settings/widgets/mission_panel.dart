@@ -6,7 +6,6 @@ import '../../../services/mission_file_service.dart';
 import '../../../services/mission_service.dart';
 import '../../../services/notifier_service.dart';
 import 'mission_editor_tile.dart';
-import 'mission_tile.dart';
 import 'mission_toolbar.dart';
 
 class MissionPanel extends StatelessWidget {

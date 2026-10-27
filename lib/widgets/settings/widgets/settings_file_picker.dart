@@ -21,7 +21,7 @@ class SettingsFilePicker extends StatelessWidget {
         children: [
           SizedBox(
             width: 120,
-            child: Text(title),
+            child: Text(title, style: TextStyle(fontSize: 16),),
           ),
 
           const SizedBox(width: 16),
@@ -33,7 +33,7 @@ class SettingsFilePicker extends StatelessWidget {
                 path.isEmpty ? "Not selected" : path,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: Colors.white30
+                  color: Colors.white30, fontSize: 16
                 ),
               ),
             ),

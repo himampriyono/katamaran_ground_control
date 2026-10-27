@@ -18,7 +18,7 @@ class SettingsGroup extends StatelessWidget{
         Text(
           title,
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: FontWeight.w600
           ),
         ),
