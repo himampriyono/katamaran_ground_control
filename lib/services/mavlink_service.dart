@@ -853,11 +853,27 @@ class MavlinkService {
   }
 
   static _handleStatusText(Statustext message) {
-    final bytes = message.text
-        .map((byte) => byte & 0xFF)
-        .takeWhile((byte) => byte != 0)
+    // final bytes = message.text
+    //     .map((byte) => byte & 0xFF)
+    //     .takeWhile((byte) => byte != 0)
+    //     .toList();
+    // final text = utf8.decode(bytes, allowMalformed: true).trim();
+
+    final List<int> rawBytes = List<int>.from(
+      message.text.map((byte) => (byte as int) & 0xFF),
+    );
+
+    final endIndex = rawBytes.indexOf(0);
+    final bytes = endIndex >= 0 ? rawBytes.sublist(0, endIndex) : rawBytes;
+
+    final cleanBytes = bytes
+        .where((byte) => byte >= 0x20 && byte != 0x7F)
         .toList();
-    final text = utf8.decode(bytes, allowMalformed: true).trim();
+
+    final text = utf8
+        .decode(cleanBytes, allowMalformed: true)
+        .replaceAll('\uFFFD', '')
+        .trim();
 
     if (text.isEmpty) return;
 

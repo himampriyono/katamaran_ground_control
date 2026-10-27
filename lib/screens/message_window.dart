@@ -8,13 +8,32 @@ class MessageWindow extends StatelessWidget {
   const MessageWindow({super.key});
 
   static String _decodeText(dynamic message) {
-    final List<int> bytes = List<int>.from(
-      message.text
-          .map((byte) => (byte as int) & 0xFF)
-          .takeWhile((byte) => byte != 0),
+    // final List<int> bytes = List<int>.from(
+    //   message.text
+    //       .map((byte) => (byte as int) & 0xFF)
+    //       .takeWhile((byte) => byte != 0),
+    // );
+
+    // return utf8.decode(bytes, allowMalformed: true).trim();
+    final List<int> rawBytes = List<int>.from(
+      message.text.map((byte) => (byte as int) & 0xFF),
     );
 
-    return utf8.decode(bytes, allowMalformed: true).trim();
+    // debugPrint(
+    //   'STATUSTEXT raw: ${rawBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')}',
+    // );
+
+    final endIndex = rawBytes.indexOf(0);
+    final bytes = endIndex >= 0 ? rawBytes.sublist(0, endIndex) : rawBytes;
+
+    final cleanBytes = bytes
+        .where((byte) => byte >= 0x20 && byte != 0x7F)
+        .toList();
+
+    return utf8
+        .decode(cleanBytes, allowMalformed: true)
+        .replaceAll('\uFFFD', '')
+        .trim();
   }
 
   static Color _severityColor(int severity) {
