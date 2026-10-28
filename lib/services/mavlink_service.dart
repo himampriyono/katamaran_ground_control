@@ -854,6 +854,11 @@ class MavlinkService {
 
     final name = String.fromCharCodes(nameBytes.takeWhile((byte) => byte != 0));
 
+    if (name == 'TEMP_C') {
+      MavlinkData.temperatureC.value = message.value;
+      return;
+    }
+
     if (name != 'T21' && name != 'T22' && name != 'T23' && name != 'T24') {
       return;
     }

@@ -61,6 +61,31 @@ class TelemetryPage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
+              _buildSectionCard(
+                context,
+                title: "Controller Room",
+                icon: Icons.pest_control,
+                child: ValueListenableBuilder<double?>(
+                  valueListenable: MavlinkData.temperatureC,
+                  builder: (context, tempC, child) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: _buildTelemetryMetric(
+                            label: "CONTROLLER ROOM TEMP",
+                            value: tempC == null
+                                ? "--"
+                                : "${tempC.toStringAsFixed(1)} °C",
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
               ValueListenableBuilder<TorpedoVoltage>(
                 valueListenable: MavlinkData.torpedoVoltage,
                 builder: (context, voltage, _) {
@@ -113,6 +138,7 @@ class TelemetryPage extends StatelessWidget {
                     title,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
+                      fontSize: 16
                     ),
                   ),
                 ),
@@ -257,6 +283,7 @@ class TelemetryPage extends StatelessWidget {
                   label,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w600,
+                    fontSize: 16
                   ),
                 ),
               ),
@@ -276,6 +303,7 @@ class TelemetryPage extends StatelessWidget {
                   text: ' $unit',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
+                    fontSize: 16
                   ),
                 ),
               ],
@@ -322,6 +350,7 @@ class TelemetryPage extends StatelessWidget {
                   'T${torpedoId - 20}',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
+                    fontSize: 16
                   ),
                 ),
                 const SizedBox(height: 2),
