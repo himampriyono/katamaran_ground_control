@@ -953,10 +953,10 @@ class MainSidePanel extends StatelessWidget {
 
           // RPM
           ValueListenableBuilder(
-            valueListenable: MavlinkData.rpm,
-            builder: (context, rpm, _) {
-              final rpm1Text = (rpm.rpm1).toStringAsFixed(0);
-              final rpm2Text = (rpm.rpm2).toStringAsFixed(0);
+            valueListenable: MavlinkData.boatEngineTelemetry,
+            builder: (context, engine, _) {
+              final rpm1Text = (engine.motor1Rpm ?? 0).toStringAsFixed(0);
+              final rpm2Text = (engine.motor2Rpm ?? 0).toStringAsFixed(0);
 
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,

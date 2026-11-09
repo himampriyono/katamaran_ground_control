@@ -859,17 +859,48 @@ class MavlinkService {
       return;
     }
 
-    if (name != 'T21' && name != 'T22' && name != 'T23' && name != 'T24') {
-      return;
+    if (name == 'T21' || name == 'T22' || name == 'T23' || name == 'T24') {
+      final torpedoId = int.parse(name.substring(1));
+      final voltage = message.value;
+
+      final current = MavlinkData.torpedoVoltage.value;
+
+      final values = Map<int, double>.from(current.values);
+      values[torpedoId] = voltage;
+      MavlinkData.torpedoVoltage.value = TorpedoVoltage(values: values);
+    } else if (name == 'RPM_R' ||
+        name == 'RPM_L' ||
+        name == 'FUEL_R' ||
+        name == 'FUEL_L') {
+      switch (name) {
+        case 'RPM_L':
+          MavlinkData.boatEngineTelemetry.value = BoatEngineTelemetry(
+            motor1Rpm: message.value,
+          );
+          break;
+
+        case 'RPM_R':
+          MavlinkData.boatEngineTelemetry.value = BoatEngineTelemetry(
+            motor2Rpm: message.value,
+          );
+          break;
+
+        case 'FUEL_L':
+          MavlinkData.boatEngineTelemetry.value = BoatEngineTelemetry(
+            motor1FuelPercent: message.value,
+          );
+          break;
+
+        case 'FUEL_R':
+          MavlinkData.boatEngineTelemetry.value = BoatEngineTelemetry(
+            motor2FuelPercent: message.value,
+          );
+          break;
+
+        default:
+          break;
+      }
     }
-    final torpedoId = int.parse(name.substring(1));
-    final voltage = message.value;
-
-    final current = MavlinkData.torpedoVoltage.value;
-
-    final values = Map<int, double>.from(current.values);
-    values[torpedoId] = voltage;
-    MavlinkData.torpedoVoltage.value = TorpedoVoltage(values: values);
   }
 
   static _handleStatusText(Statustext message) {

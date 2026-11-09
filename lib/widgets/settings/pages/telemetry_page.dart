@@ -138,7 +138,7 @@ class TelemetryPage extends StatelessWidget {
                     title,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
-                      fontSize: 16
+                      fontSize: 16,
                     ),
                   ),
                 ),
@@ -283,7 +283,7 @@ class TelemetryPage extends StatelessWidget {
                   label,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w600,
-                    fontSize: 16
+                    fontSize: 16,
                   ),
                 ),
               ),
@@ -303,7 +303,7 @@ class TelemetryPage extends StatelessWidget {
                   text: ' $unit',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
-                    fontSize: 16
+                    fontSize: 16,
                   ),
                 ),
               ],
@@ -350,7 +350,7 @@ class TelemetryPage extends StatelessWidget {
                   'T${torpedoId - 20}',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    fontSize: 16
+                    fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 2),

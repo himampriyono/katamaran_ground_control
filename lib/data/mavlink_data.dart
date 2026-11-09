@@ -49,8 +49,16 @@ class MavlinkData {
   static final ValueNotifier<Rpm> rpm = ValueNotifier(Rpm(rpm1: 0, rpm2: 0));
   static final ValueNotifier<EscTelemetry1To4?> escTelemetry1To4 =
       ValueNotifier(null);
-  static final ValueNotifier<double?> temperatureC =
-    ValueNotifier<double?>(null);
+  static final ValueNotifier<double?> temperatureC = ValueNotifier<double?>(
+    null,
+  );
+
+  static final ValueNotifier<List<double>> engineRpm = ValueNotifier(
+    <double>[],
+  );
+  static final ValueNotifier<List<double>> engineFuel = ValueNotifier(
+    <double>[],
+  );
 
   static final Map<String, MavParameter> parameters = {};
   static int parameterCount = 0;
