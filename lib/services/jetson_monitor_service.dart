@@ -16,6 +16,8 @@ class JetsonMonitorService {
   static double? cpuTemp;
   static double? gpuTemp;
   static double? junctionTemp;
+  static double? ecoflow_battery;
+  static bool? ecoflow_online;
 
   static void connect(String ip) {
     _jetsonIp = ip;
@@ -88,6 +90,10 @@ class JetsonMonitorService {
       cpuTemp = (data['cpu_temp'] as num?)?.toDouble();
       gpuTemp = (data['gpu_temp'] as num?)?.toDouble();
       junctionTemp = (data['junction_temp'] as num?)?.toDouble();
+      ecoflow_battery = (data['ecoflow_battery'] as num?)?.toDouble();
+      ecoflow_online = (data['ecoflow_online'] as bool);
+
+      // debugPrint("ecoflow: $ecoflow_battery");
 
       // debugPrint(
       //   '[JETSON] '
@@ -100,6 +106,8 @@ class JetsonMonitorService {
         cpuTemp: (data['cpu_temp'] as num?)?.toDouble() ?? 0,
         gpuTemp: (data['gpu_temp'] as num?)?.toDouble() ?? 0,
         junctionTemp: (data['junction_temp'] as num?)?.toDouble() ?? 0,
+        ecoflow_battery: (data['ecoflow_battery'] as num?)?.toDouble() ?? 0,
+        ecoflow_online: (data['ecoflow_online'] as bool),
       );
     } catch (e) {
       debugPrint('[JETSON] JSON parse error: $e');

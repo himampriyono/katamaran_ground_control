@@ -68,11 +68,15 @@ class JetsonTelemetry {
   final double cpuTemp;
   final double gpuTemp;
   final double junctionTemp;
+  final double ecoflow_battery;
+  final bool ecoflow_online;
 
   const JetsonTelemetry({
     this.connected = false,
     this.cpuTemp = 0,
     this.gpuTemp = 0,
     this.junctionTemp = 0,
+    this.ecoflow_battery = 0,
+    this.ecoflow_online = false,
   });
 }

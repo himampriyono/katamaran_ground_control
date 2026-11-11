@@ -283,22 +283,11 @@ class MavlinkService {
       // NotifierService.triggerRpmUpdate();
     } else if (message is EscTelemetry1To4) {
       MavlinkData.escTelemetry1To4.value = message;
-      // NotifierService.triggerEscUpdate();
-      // debugPrint("Data esc telem: $message");
-      // debugPrint(
-      //   'ESC Telemetry 1-4:\n'
-      //   'Temperature: ${message.temperature} °C\n'
-      //   'Voltage (raw cV): ${message.voltage}\n'
-      //   'Current (raw cA): ${message.current}\n'
-      //   'Total Current: ${message.totalcurrent} mAh\n'
-      //   'RPM (eRPM): ${message.rpm}\n'
-      //   'Packet Count: ${message.count}',
-      // );
     } else if (message is NamedValueInt) {
       _handleNamedValueInt(message);
     } else if (message is NamedValueFloat) {
       _handleNamedValueFloat(message);
-      _handleEngineTelemetryFloat(message);
+      // _handleEngineTelemetryFloat(message);
     } else if (message is McuStatus) {
       MavlinkData.lastMcuStatus = message;
       NotifierService.triggerStatusUpdate();
@@ -850,56 +839,75 @@ class MavlinkService {
   }
 
   void _handleNamedValueFloat(NamedValueFloat message) {
-    final nameBytes = message.name;
+    try {
+      final nameBytes = message.name;
 
-    final name = String.fromCharCodes(nameBytes.takeWhile((byte) => byte != 0));
+      final name = String.fromCharCodes(
+        nameBytes.takeWhile((byte) => byte != 0),
+      ).trim();
+      debugPrint("Got $name Value: ${message.value}");
 
-    if (name == 'TEMP_C') {
-      MavlinkData.temperatureC.value = message.value;
-      return;
-    }
+      final value = message.value.toDouble();
+      final current = MavlinkData.boatEngineTelemetry.value;
 
-    if (name == 'T21' || name == 'T22' || name == 'T23' || name == 'T24') {
-      final torpedoId = int.parse(name.substring(1));
-      final voltage = message.value;
+      if (name == 'T21' || name == 'T22' || name == 'T23' || name == 'T24') {
+        final torpedoId = int.parse(name.substring(1));
+        final voltage = message.value;
 
-      final current = MavlinkData.torpedoVoltage.value;
+        final current = MavlinkData.torpedoVoltage.value;
 
-      final values = Map<int, double>.from(current.values);
-      values[torpedoId] = voltage;
-      MavlinkData.torpedoVoltage.value = TorpedoVoltage(values: values);
-    } else if (name == 'RPM_R' ||
-        name == 'RPM_L' ||
-        name == 'FUEL_R' ||
-        name == 'FUEL_L') {
+        final values = Map<int, double>.from(current.values);
+        values[torpedoId] = voltage;
+        MavlinkData.torpedoVoltage.value = TorpedoVoltage(values: values);
+      }
+
       switch (name) {
-        case 'RPM_L':
-          MavlinkData.boatEngineTelemetry.value = BoatEngineTelemetry(
-            motor1Rpm: message.value,
+        case 'TEMP_C':
+          MavlinkData.temperatureC.value = message.value;
+          break;
+
+        case 'RPML':
+          MavlinkData.boatEngineTelemetry.value = current.copyWith(
+            motor1Rpm: value,
           );
           break;
 
-        case 'RPM_R':
-          MavlinkData.boatEngineTelemetry.value = BoatEngineTelemetry(
-            motor2Rpm: message.value,
+        case 'RPMR':
+          MavlinkData.boatEngineTelemetry.value = current.copyWith(
+            motor2Rpm: value,
           );
           break;
 
-        case 'FUEL_L':
-          MavlinkData.boatEngineTelemetry.value = BoatEngineTelemetry(
-            motor1FuelPercent: message.value,
+        case 'FL':
+          MavlinkData.boatEngineTelemetry.value = current.copyWith(
+            motor1FuelPercent: value,
           );
           break;
 
-        case 'FUEL_R':
-          MavlinkData.boatEngineTelemetry.value = BoatEngineTelemetry(
-            motor2FuelPercent: message.value,
+        case 'FR':
+          MavlinkData.boatEngineTelemetry.value = current.copyWith(
+            motor2FuelPercent: value,
+          );
+          break;
+
+        case 'GEARR':
+          MavlinkData.boatEngineTelemetry.value = current.copyWith(
+            motor1GearPos: value,
+          );
+          break;
+
+        case 'GEARL':
+          MavlinkData.boatEngineTelemetry.value = current.copyWith(
+            motor2GearPos: value,
           );
           break;
 
         default:
           break;
       }
+    } catch (e) {
+      // debugPrint('Error handling NAMED_VALUE_FLOAT: $e');
+      // debugPrint('$stackTrace');
     }
   }
 
@@ -1152,32 +1160,35 @@ class MavlinkService {
       message.name.takeWhile((code) => code != 0).map((code) => code & 0xFF),
     ).trim();
 
-    if (name != "M1_RPM" &&
-        name != "M2_RPM" &&
-        name != "M1_FUEL" &&
-        name != "M2_FUEL")
+    debugPrint("got Float: $name");
+
+    if (name != "RPM_R" &&
+        name != "RPM_L" &&
+        name != "FUEL_L" &&
+        name != "FUEL_R") {
       return;
+    }
 
     final value = message.value.toDouble();
     final current = MavlinkData.boatEngineTelemetry.value;
 
     switch (name) {
-      case "M1_RPM":
+      case "RPM_L":
         MavlinkData.boatEngineTelemetry.value = current.copyWith(
           motor1Rpm: value,
         );
         break;
-      case "M2_RPM":
+      case "RPM_R":
         MavlinkData.boatEngineTelemetry.value = current.copyWith(
           motor2Rpm: value,
         );
         break;
-      case "M1_FUEL":
+      case "FUEL_L":
         MavlinkData.boatEngineTelemetry.value = current.copyWith(
           motor1FuelPercent: value,
         );
         break;
-      case "M2_FUEL":
+      case "FUEL_R":
         MavlinkData.boatEngineTelemetry.value = current.copyWith(
           motor2FuelPercent: value,
         );

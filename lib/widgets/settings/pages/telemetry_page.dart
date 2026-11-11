@@ -83,6 +83,30 @@ class TelemetryPage extends StatelessWidget {
                   },
                 ),
               ),
+              const SizedBox(height: 20),
+
+              _buildSectionCard(
+                context,
+                title: "ECOFlow",
+                icon: Icons.power,
+                child: ValueListenableBuilder<JetsonTelemetry?>(
+                  valueListenable: AppData.jetsonTelemetry,
+                  builder: (context, batt, child) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: _buildTelemetryMetric(
+                            label: "ECOFLOW BATTERY",
+                            value: batt == null
+                                ? "--"
+                                : "${(batt.ecoflow_battery).toStringAsFixed(0)} %",
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
 
               const SizedBox(height: 20),
 

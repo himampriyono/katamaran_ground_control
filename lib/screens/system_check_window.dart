@@ -129,7 +129,7 @@ class _SystemCheckContentState extends State<_SystemCheckContent> {
                   context,
                 ).copyWith(scrollbars: false),
                 child: Column(
-                  spacing: 12,
+                  // spacing: 12,
                   children: [
                     _systemCheckItem(
                       'MAVlink Connection',
@@ -166,17 +166,37 @@ class _SystemCheckContentState extends State<_SystemCheckContent> {
                       AppData.joystickStatus.value == JoystickStatus.connected,
                     ),
                     _systemCheckItem(
-                      'Engine 1',
+                      'Engine 1 Status',
                       "${(MavlinkData.boatEngineTelemetry.value.motor1Rpm ?? 0).toStringAsFixed(0)} RPM",
                       (MavlinkData.boatEngineTelemetry.value.motor1Rpm ?? 0) >
                           0,
                     ),
                     _systemCheckItem(
-                      'Engine 2',
+                      'Engine 2 Status',
                       "${(MavlinkData.boatEngineTelemetry.value.motor2Rpm ?? 0).toStringAsFixed(0)} RPM",
                       (MavlinkData.boatEngineTelemetry.value.motor2Rpm ?? 0) >
                           0,
                     ),
+                    // _systemCheckItem(
+                    //   'Fuel 1',
+                    //   "${(MavlinkData.boatEngineTelemetry.value.motor1FuelPercent ?? 0)} %",
+                    //   (MavlinkData
+                    //               .boatEngineTelemetry
+                    //               .value
+                    //               .motor1FuelPercent ??
+                    //           0) >
+                    //       30,
+                    // ),
+                    // _systemCheckItem(
+                    //   'Fuel 2',
+                    //   "${(MavlinkData.boatEngineTelemetry.value.motor2FuelPercent ?? 0)} %",
+                    //   (MavlinkData
+                    //               .boatEngineTelemetry
+                    //               .value
+                    //               .motor2FuelPercent ??
+                    //           0) >
+                    //       30,
+                    // ),
                   ],
                 ),
               ),

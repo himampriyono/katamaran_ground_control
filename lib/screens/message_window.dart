@@ -8,20 +8,9 @@ class MessageWindow extends StatelessWidget {
   const MessageWindow({super.key});
 
   static String _decodeText(dynamic message) {
-    // final List<int> bytes = List<int>.from(
-    //   message.text
-    //       .map((byte) => (byte as int) & 0xFF)
-    //       .takeWhile((byte) => byte != 0),
-    // );
-
-    // return utf8.decode(bytes, allowMalformed: true).trim();
     final List<int> rawBytes = List<int>.from(
       message.text.map((byte) => (byte as int) & 0xFF),
     );
-
-    // debugPrint(
-    //   'STATUSTEXT raw: ${rawBytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ')}',
-    // );
 
     final endIndex = rawBytes.indexOf(0);
     final bytes = endIndex >= 0 ? rawBytes.sublist(0, endIndex) : rawBytes;
@@ -108,22 +97,6 @@ class _MessageWindowContent extends StatelessWidget {
                         letterSpacing: 2,
                       ),
                     ),
-                    // const SizedBox(height: 4),
-                    // AnimatedBuilder(
-                    //   animation: MavlinkData.statusTextMessages,
-                    //   builder: (context, child) {
-                    //     final messages = MavlinkData.statusTextMessages.value;
-
-                    //     return Text(
-                    //       '${messages.length} STORED MESSAGES  •  LIVE FEED',
-                    //       style: const TextStyle(
-                    //         color: Colors.white38,
-                    //         fontSize: 10,
-                    //         letterSpacing: 1,
-                    //       ),
-                    //     );
-                    //   },
-                    // ),
                   ],
                 ),
               ),
@@ -196,23 +169,6 @@ class _MessageWindowContent extends StatelessWidget {
             },
           ),
         ),
-
-        // FOOTER
-        // Container(
-        //   width: double.infinity,
-        //   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        //   decoration: BoxDecoration(
-        //     border: Border(top: BorderSide(color: Colors.white.withAlpha(25))),
-        //   ),
-        //   child: const Text(
-        //     'MAVLink STATUSTEXT',
-        //     style: TextStyle(
-        //       color: Colors.white30,
-        //       fontSize: 10,
-        //       letterSpacing: 1.5,
-        //     ),
-        //   ),
-        // ),
       ],
     );
   }

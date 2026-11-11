@@ -78,7 +78,7 @@ class AppUtils {
 
     return '$degreeText° '
         '${minutes.toString().padLeft(2, '0')}′ '
-        '$seconds′′ $hemisphere';
+        '${seconds.toString()}′′ $hemisphere';
   }
 
   static (String latitude, String longitude) latToToDms(

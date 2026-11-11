@@ -52,6 +52,9 @@ class MavlinkData {
   static final ValueNotifier<double?> temperatureC = ValueNotifier<double?>(
     null,
   );
+  static final ValueNotifier<double?> ecoflowBattery = ValueNotifier<double?>(
+    null,
+  );
 
   static final ValueNotifier<List<double>> engineRpm = ValueNotifier(
     <double>[],
@@ -184,12 +187,16 @@ class BoatEngineTelemetry {
   final double? motor2Rpm;
   final double? motor1FuelPercent;
   final double? motor2FuelPercent;
+  final double? motor1GearPos;
+  final double? motor2GearPos;
 
   const BoatEngineTelemetry({
     this.motor1Rpm,
     this.motor2Rpm,
     this.motor1FuelPercent,
     this.motor2FuelPercent,
+    this.motor1GearPos,
+    this.motor2GearPos,
   });
 
   BoatEngineTelemetry copyWith({
@@ -197,12 +204,16 @@ class BoatEngineTelemetry {
     double? motor2Rpm,
     double? motor1FuelPercent,
     double? motor2FuelPercent,
+    double? motor1GearPos,
+    double? motor2GearPos,
   }) {
     return BoatEngineTelemetry(
       motor1Rpm: motor1Rpm ?? this.motor1Rpm,
       motor2Rpm: motor2Rpm ?? this.motor2Rpm,
       motor1FuelPercent: motor1FuelPercent ?? this.motor1FuelPercent,
       motor2FuelPercent: motor2FuelPercent ?? this.motor2FuelPercent,
+      motor1GearPos: motor1GearPos ?? this.motor1GearPos,
+      motor2GearPos: motor2GearPos ?? this.motor2GearPos,
     );
   }
 }

@@ -983,18 +983,56 @@ class MainSidePanel extends StatelessWidget {
           const SizedBox(height: 8),
 
           ValueListenableBuilder(
-            valueListenable: MavlinkData.escTelemetry1To4,
-            builder: (context, esc, _) {
-              debugPrint("Data esc: $esc");
+            valueListenable: MavlinkData.boatEngineTelemetry,
+            builder: (context, engine, _) {
+              return Row(
+                children: [
+                  _buildDataItem(
+                    title: "MOTOR 1 GEAR POS",
+                    value: (engine.motor1GearPos ?? 0) < 1
+                        ? "F"
+                        : ((engine.motor1GearPos ?? 0) > 21
+                              ? "R"
+                              : (engine.motor1GearPos ?? 0) >= 11 &&
+                                    (engine.motor1GearPos ?? 0) <= 13
+                              ? "N"
+                              : ""),
+                    valueColor: Colors.blue,
+                    valueSize: 32,
+                  ),
+                  _buildDataItem(
+                    title: "MOTOR 2 GEAR POS",
+                    value: (engine.motor2GearPos ?? 0) < 1
+                        ? "F"
+                        : ((engine.motor2GearPos ?? 0) > 21
+                              ? "R"
+                              : (engine.motor2GearPos ?? 0) >= 11 &&
+                                    (engine.motor2GearPos ?? 0) <= 13
+                              ? "N"
+                              : ""),
+                    valueColor: Colors.blue,
+                    valueSize: 32,
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          Divider(height: 1, color: Colors.white.withAlpha(20)),
+          const SizedBox(height: 8),
+
+          ValueListenableBuilder(
+            valueListenable: MavlinkData.boatEngineTelemetry,
+            builder: (context, engine, _) {
               return Row(
                 children: [
                   fuelItem(
                     "MOTOR 1 FUEL",
-                    (esc != null ? esc.rpm[2] * 0.1 : 0).toDouble(),
+                    (engine.motor1FuelPercent ?? 0).toDouble(),
                   ),
                   fuelItem(
                     "MOTOR 2 FUEL",
-                    (esc != null ? esc.rpm[3] * 0.1 : 0).toDouble(),
+                    (engine.motor2FuelPercent ?? 0).toDouble(),
                   ),
                 ],
               );
